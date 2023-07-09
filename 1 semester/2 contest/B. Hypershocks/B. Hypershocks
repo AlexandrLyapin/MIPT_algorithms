@@ -1,0 +1,77 @@
+#include <iostream>
+#include <cstdio>
+#include <algorithm>
+#include <iostream>
+
+struct Pair {
+  int first;
+  int second;
+};
+
+bool Check(int a, int b, int k) {
+  return a >= (b + k - 1) / k;
+}
+
+void Hypercheckers(Pair* pairs, int size, int k) {
+  uint64_t answer = 0;
+  for (int i = 0, j = 1, value1 = 0, value2 = 0; i < size;) {
+    while (j < size && Check(pairs[i].first, pairs[j].first, k)) {
+      value1++;
+      if (pairs[j].second >= 2) {
+        value2++;
+      }
+      j++;
+    }
+
+    if (pairs[i].second == 2 || pairs[i].second == 1) {
+      if (pairs[i].second == 2) {
+        answer += 3 * value1;
+        answer += 3 * (value2 + static_cast<uint64_t>(value1) * (value1 - 1));
+      }
+      if (pairs[i].second == 1) {
+        answer += 3 * (value2 + static_cast<uint64_t>(value1) * (value1 - 1));
+      }
+    } else {
+      answer++;
+      answer += 3 * value1;
+      answer += 3 * (value2 + static_cast<uint64_t>(value1) * (value1 - 1));
+    }
+
+    if (i + 1 == j) {
+      i++;
+      j++;
+    } else {
+      i++;
+      value1--;
+      if (pairs[i].second >= 2) {
+        value2--;
+      }
+    }
+  }
+  std::cout << answer << std::endl;
+}
+
+int main() {
+  int n, k;
+  std::cin >> n >> k;
+  auto numbers = new int[n];
+  for (int i = 0; i < n; ++i) {
+    std::cin >> numbers[i];
+  }
+  std::sort(numbers, numbers + n);
+  auto pairs = new Pair[n];
+  int size = 0;
+  for (int i = 0; i < n;) {
+    int j = i;
+    while (i < n && numbers[i] == numbers[j]) {
+      ++i;
+    }
+    pairs[size].first = numbers[j];
+    pairs[size].second = i - j;
+    size++;
+  }
+
+  Hypercheckers(pairs, size, k);
+  delete[] numbers;
+  delete[] pairs;
+}

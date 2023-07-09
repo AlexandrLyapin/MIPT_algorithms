@@ -1,0 +1,115 @@
+#ifndef ARRAYRT
+#define ARRAYRT
+
+#include <stdexcept>
+
+class ArrayOutOfRange : public std::out_of_range {
+ public:
+  ArrayOutOfRange() : std::out_of_range("ArrayOutOfRange") {
+  }
+};
+
+template <typename T, size_t N>
+class Array {
+ public:
+  T arr[N];
+
+  constexpr T& operator[](size_t i);
+  constexpr const T& operator[](size_t i) const;
+  constexpr T& At(size_t idx);
+  constexpr const T& At(size_t idx) const;
+  constexpr T& Front();
+  constexpr const T& Front() const;
+  constexpr T& Back();
+  constexpr const T& Back() const;
+  constexpr T* Data();
+  constexpr const T* Data() const;
+  constexpr int Size() const;
+  constexpr bool Empty() const;
+  constexpr void Fill(const T& value);
+  constexpr void Swap(Array<T, N>& other);
+};
+
+template <typename T, size_t N>
+constexpr T& Array<T, N>::operator[](size_t i) {
+  return arr[i];
+}
+
+template <typename T, size_t N>
+constexpr const T& Array<T, N>::operator[](size_t i) const {
+  return arr[i];
+}
+
+template <typename T, size_t N>
+constexpr T& Array<T, N>::At(size_t idx) {
+  if (idx >= N || idx < 0) {
+    throw ArrayOutOfRange{};
+  } else {
+    return arr[idx];
+  }
+}
+
+template <typename T, size_t N>
+constexpr const T& Array<T, N>::At(size_t idx) const {
+  if (idx >= N || idx < 0) {
+    throw ArrayOutOfRange{};
+  } else {
+    return arr[idx];
+  }
+}
+
+template <typename T, size_t N>
+constexpr T& Array<T, N>::Front() {
+  return arr[0];
+}
+
+template <typename T, size_t N>
+constexpr const T& Array<T, N>::Front() const {
+  return arr[0];
+}
+
+template <typename T, size_t N>
+constexpr T& Array<T, N>::Back() {
+  return arr[N - 1];
+}
+
+template <typename T, size_t N>
+constexpr const T& Array<T, N>::Back() const {
+  return arr[N - 1];
+}
+
+template <typename T, size_t N>
+constexpr T* Array<T, N>::Data() {
+  return arr;
+}
+
+template <typename T, size_t N>
+constexpr const T* Array<T, N>::Data() const {
+  return arr;
+}
+
+template <typename T, size_t N>
+constexpr int Array<T, N>::Size() const {
+  return N;
+}
+
+template <typename T, size_t N>
+constexpr bool Array<T, N>::Empty() const {
+  return false;
+}
+
+template <typename T, size_t N>
+constexpr void Array<T, N>::Fill(const T& value) {
+  for (size_t i = 0; i < N; ++i) {
+    arr[i] = value;
+  }
+}
+
+template <typename T, size_t N>
+constexpr void Array<T, N>::Swap(Array<T, N>& other) {
+  for (size_t i = 0; i < N; ++i) {
+    std::swap(other[i], arr[i]);
+  }
+}
+
+#endif

@@ -1,0 +1,117 @@
+#include <iostream>
+
+struct Node {
+  int key;
+  Node* next = nullptr;
+  Node* prev = nullptr;
+};
+
+class List {
+  int size_n_;
+  Node* head_;
+  Node* tail_;
+
+ public:
+  List();
+  ~List();
+
+  void Pushback(Node* elem);
+  Node* Popfront();
+  int Size() {
+    return size_n_;
+  }
+  int Front() const;
+  int Back() const;
+};
+
+List::List() {
+  size_n_ = 0;
+  head_ = nullptr;
+  tail_ = nullptr;
+}
+
+List::~List() = default;
+
+void List::Pushback(Node* elem) {
+  elem->next = nullptr;
+  if (head_ == nullptr) {
+    elem->prev = nullptr;
+    head_ = elem;
+    tail_ = head_;
+  } else {
+    tail_->next = elem;
+    elem->prev = tail_;
+    tail_ = elem;
+  }
+  size_n_++;
+}
+
+Node* List::Popfront() {
+  if (Size() == 0) {
+    return nullptr;
+  }
+  Node* temp = head_;
+  if (head_ != tail_) {
+    head_ = head_->next;
+    head_->prev = nullptr;
+  } else {
+    head_ = nullptr;
+    tail_ = nullptr;
+  }
+  size_n_--;
+  return temp;
+}
+
+int List::Front() const {
+  return head_->key;
+}
+
+int List::Back() const {
+  return tail_->key;
+}
+
+int main() {
+  int sum = 0;
+  List first;
+  List second;
+  auto cards = new Node[10];
+  for (int i = 0; i < 10; ++i) {
+    std::cin >> cards[i].key;
+  }
+  for (int i = 0; i < 5; ++i) {
+    first.Pushback(&cards[i]);
+  }
+  for (int i = 5; i < 10; ++i) {
+    second.Pushback(&cards[i]);
+  }
+  while (second.Size() != 0 && first.Size() != 0 && sum < 1000000) {
+    if (first.Front() == 0 && second.Front() == 9) {
+      first.Pushback(first.Popfront());
+      first.Pushback(second.Popfront());
+    } else {
+      if (first.Front() == 9 && second.Front() == 0) {
+        second.Pushback(first.Popfront());
+        second.Pushback(second.Popfront());
+      } else {
+        if (second.Front() > first.Front()) {
+          second.Pushback(first.Popfront());
+          second.Pushback(second.Popfront());
+        } else {
+          first.Pushback(first.Popfront());
+          first.Pushback(second.Popfront());
+        }
+      }
+    }
+    sum++;
+  }
+  if (sum == 1000000) {
+    std::cout << "botva";
+  } else {
+    if (first.Size() == 0) {
+      std::cout << "second " << sum;
+    } else {
+      std::cout << "first " << sum;
+    }
+  }
+  delete[] cards;
+}

@@ -1,0 +1,120 @@
+#include <iostream>
+
+struct Node {
+  int key;
+  Node* left;
+  Node* right;
+  explicit Node(int key, Node* left = nullptr, Node* right = nullptr) {
+    this->key = key;
+    this->left = left;
+    this->right = right;
+  }
+};
+
+class Tree {
+ public:
+  Tree();
+  ~Tree();
+  Node* root;
+  Node* lastnode;
+  void Push(int key);
+  void PushLow(int key);
+  void PostOrder(Node* elem);
+  void Order();
+  void RecursiveClear(Node* elem);
+  void Clear();
+};
+
+Tree::Tree() {
+  root = nullptr;
+  lastnode = nullptr;
+}
+
+Tree::~Tree() = default;
+
+void Tree::Push(int key) {
+  if (root == nullptr) {
+    root = new Node(key);
+    lastnode = root;
+  } else {
+    if (key < lastnode->key) {
+      PushLow(key);
+      return;
+    }
+    Node* temp = root;
+    while (temp->left != nullptr || temp->right != nullptr) {
+      if (key == temp->key) {
+        return;
+      }
+      if (key > temp->key) {
+        if (temp->right == nullptr) {
+          break;
+        }
+        temp = temp->right;
+      } else {
+        if (temp->left == nullptr) {
+          break;
+        }
+        temp = temp->left;
+      }
+    }
+    if (key == temp->key) {
+      return;
+    }
+    if (key > temp->key) {
+      temp->right = new Node(key);
+      lastnode = temp->right;
+    } else {
+      temp->left = new Node(key);
+      lastnode = temp->left;
+    }
+  }
+}
+
+void Tree::PushLow(int key) {
+  lastnode->left = new Node(key);
+  lastnode = lastnode->left;
+}
+
+void Tree::PostOrder(Node* elem) {
+  if (elem != nullptr) {
+    PostOrder(elem->left);
+    PostOrder(elem->right);
+    std::cout << elem->key << " ";
+  }
+}
+
+void Tree::Order() {
+  PostOrder(root);
+}
+
+void Tree::RecursiveClear(Node* elem) {
+  if (elem != nullptr) {
+    RecursiveClear(elem->left);
+    RecursiveClear(elem->right);
+    delete elem;
+  }
+}
+
+void Tree::Clear() {
+  RecursiveClear(root);
+}
+
+void Sosna() {
+  Tree sosna;
+  int n;
+  int value;
+  std::cin >> n;
+  for (int i = 0; i < n; ++i) {
+    std::cin >> value;
+    sosna.Push(value);
+  }
+  sosna.Order();
+  sosna.Clear();
+}
+
+int main() {
+  std::ios::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+  Sosna();
+}

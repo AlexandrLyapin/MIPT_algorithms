@@ -1,0 +1,122 @@
+#include <iostream>
+#include <stack>
+
+struct Node {
+  int key;
+  Node* left;
+  Node* right;
+  Node* parent;
+  explicit Node(int key, Node* left = nullptr, Node* right = nullptr, Node* parent = nullptr) {
+    this->key = key;
+    this->left = left;
+    this->right = right;
+    this->parent = parent;
+  }
+};
+
+class Tree {
+ public:
+  Tree();
+  ~Tree();
+  Node* root;
+  void Push(int key);
+  void PrintLeaves();
+  void RecursiveClear(Node* elem);
+  void Clear();
+};
+
+Tree::Tree() {
+  root = nullptr;
+}
+
+Tree::~Tree() = default;
+
+void Tree::Push(int key) {
+  if (root == nullptr) {
+    root = new Node(key);
+  } else {
+    Node* temp = root;
+    while (temp->left != nullptr || temp->right != nullptr) {
+      if (key == temp->key) {
+        return;
+      }
+      if (key > temp->key) {
+        if (temp->right == nullptr) {
+          break;
+        }
+        temp = temp->right;
+      } else {
+        if (temp->left == nullptr) {
+          break;
+        }
+        temp = temp->left;
+      }
+    }
+    if (key == temp->key) {
+      return;
+    }
+    if (key > temp->key) {
+      temp->right = new Node(key);
+      temp->right->parent = temp;
+    } else {
+      temp->left = new Node(key);
+      temp->left->parent = temp;
+    }
+  }
+}
+
+void Tree::PrintLeaves() {
+  Node* current;
+  Node* previous;
+  if (root == nullptr) {
+    return;
+  }
+  current = root;
+  while (current != nullptr) {
+    if (current->left == nullptr) {
+      std::cout << current->key << "\n";
+      current = current->right;
+    } else {
+      previous = current->left;
+      while (previous->right != nullptr && previous->right != current) {
+        previous = previous->right;
+      }
+      if (previous->right == nullptr) {
+        previous->right = current;
+        current = current->left;
+      } else {
+        previous->right = nullptr;
+        std::cout << current->key << "\n";
+        current = current->right;
+      }
+    }
+  }
+}
+
+void Tree::RecursiveClear(Node* elem) {
+  if (elem != nullptr) {
+    RecursiveClear(elem->left);
+    RecursiveClear(elem->right);
+    delete elem;
+  }
+}
+
+void Tree::Clear() {
+  RecursiveClear(root);
+}
+
+void Sosna() {
+  Tree sosna;
+  int value;
+  std::cin >> value;
+  while (value != 0) {
+    sosna.Push(value);
+    std::cin >> value;
+  }
+  sosna.PrintLeaves();
+  sosna.Clear();
+}
+
+int main() {
+  Sosna();
+}

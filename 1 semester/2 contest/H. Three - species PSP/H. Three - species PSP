@@ -1,0 +1,143 @@
+#include <iostream>
+#include <cstring>
+
+class List {
+ public:
+  List();
+  ~List();
+
+  void Pushback(int key);
+  void Popback();
+  int Size() {
+    return size_n_;
+  }
+  int Back() const;
+  void Clear();
+
+ private:
+  class Node {
+   public:
+    int key;
+    Node* next;
+    Node* prev;
+    explicit Node(int key, Node* next = nullptr, Node* prev = nullptr) {
+      this->key = key;
+      this->next = next;
+      this->prev = prev;
+    }
+  };
+  int size_n_;
+  Node* head_;
+  Node* tail_;
+};
+
+List::List() {
+  size_n_ = 0;
+  head_ = nullptr;
+  tail_ = nullptr;
+}
+
+List::~List() = default;
+
+void List::Pushback(int key) {
+  if (head_ == nullptr) {
+    head_ = new Node(key);
+    tail_ = head_;
+  } else {
+    Node* current = tail_;
+    current->next = new Node(key);
+    tail_ = current->next;
+    tail_->prev = current;
+  }
+  size_n_++;
+}
+
+void List::Popback() {
+  Node* temp = tail_;
+  tail_ = tail_->prev;
+  delete temp;
+  if (tail_ != nullptr) {
+    tail_->next = nullptr;
+  } else {
+    head_ = nullptr;
+  }
+  size_n_--;
+}
+
+int List::Back() const {
+  return tail_->key;
+}
+
+void List::Clear() {
+  while (head_ != nullptr) {
+    Node* current = head_->next;
+    delete head_;
+    head_ = current;
+  }
+  tail_ = nullptr;
+  size_n_ = 0;
+}
+
+bool PSP(char* a, int len, List& lst) {
+  for (int i = 0; i < len; ++i) {
+    if (a[i] == '(') {
+      lst.Pushback(1);
+    }
+    if (a[i] == '[') {
+      lst.Pushback(2);
+    }
+    if (a[i] == '{') {
+      lst.Pushback(3);
+    }
+    if (a[i] == ')') {
+      if (lst.Size() == 0) {
+        return false;
+      }
+      if (lst.Back() == 1) {
+        lst.Popback();
+      } else {
+        lst.Clear();
+        return false;
+      }
+    }
+    if (a[i] == ']') {
+      if (lst.Size() == 0) {
+        return false;
+      }
+      if (lst.Back() == 2) {
+        lst.Popback();
+      } else {
+        lst.Clear();
+        return false;
+      }
+    }
+    if (a[i] == '}') {
+      if (lst.Size() == 0) {
+        return false;
+      }
+      if (lst.Back() == 3) {
+        lst.Popback();
+      } else {
+        lst.Clear();
+        return false;
+      }
+    }
+  }
+  return (lst.Size() == 0);
+}
+
+int main() {
+  List lst;
+  int n = 100001;
+  auto a = new char[n];
+  std::cin.get(a, n + 1);
+  int len = std::strlen(a);
+  bool flag = PSP(a, len, lst);
+  if (flag) {
+    std::cout << "YES";
+  } else {
+    std::cout << "NO";
+  }
+  lst.Clear();
+  delete[] a;
+}

@@ -1,0 +1,147 @@
+#include <iostream>
+#include <cstring>
+
+void PushHeap(int* begin, int& realsize) {
+  int i = realsize;
+  while (0 < i && begin[(i - 1) / 2] < begin[i]) {
+    std::swap(begin[(i - 1) / 2], begin[i]);
+    i = (i - 1) / 2;
+  }
+  std::cout << i + 1 << "\n";
+  realsize++;
+}
+
+void SiftDownMax(int* begin, int& realsize) {
+  int i = 0;
+  while (2 * i + 1 < realsize) {
+    int left = 2 * i + 1;
+    int right = (2 * i) + 2;
+    if (right < realsize) {
+      if (begin[i] >= begin[left] && begin[i] >= begin[right]) {
+        break;
+      }
+      if (begin[left] >= begin[right]) {
+        if (begin[i] < begin[left]) {
+          std::swap(begin[i], begin[left]);
+          i = left;
+        }
+      } else {
+        if (begin[i] < begin[right]) {
+          std::swap(begin[i], begin[right]);
+          i = right;
+        }
+      }
+    } else {
+      if (begin[left] > begin[i]) {
+        std::swap(begin[i], begin[left]);
+        i = left;
+      } else {
+        break;
+      }
+    }
+  }
+  std::cout << i + 1 << " ";
+}
+
+void SiftDownIndex(int* begin, int n, int& realsize) {
+  int i = n;
+  while ((2 * i) + 1 < realsize) {
+    int left = 2 * i + 1;
+    int right = (2 * i) + 2;
+    if (right < realsize) {
+      if (begin[i] >= begin[left] && begin[i] >= begin[right]) {
+        break;
+      }
+      if (begin[left] >= begin[right]) {
+        if (begin[i] < begin[left]) {
+          std::swap(begin[i], begin[left]);
+          i = left;
+        }
+      } else {
+        if (begin[i] < begin[right]) {
+          std::swap(begin[i], begin[right]);
+          i = right;
+        }
+      }
+    } else {
+      if (begin[left] > begin[i]) {
+        std::swap(begin[i], begin[left]);
+        i = left;
+      } else {
+        break;
+      }
+    }
+  }
+}
+
+void DeleteMax(int* begin, int& realsize) {
+  if (realsize == 0) {
+    std::cout << -1 << "\n";
+    return;
+  }
+  if (realsize == 1) {
+    std::cout << 0 << " " << begin[0] << "\n";
+    realsize = 0;
+    return;
+  }
+  int i = realsize - 1;
+  std::swap(begin[0], begin[i]);
+  realsize--;
+  SiftDownMax(begin, realsize);
+  std::cout << begin[i] << "\n";
+}
+
+void DeleteIndex(int* begin, int i, int& realsize) {
+  if (i >= realsize || i < 0) {
+    std::cout << -1 << "\n";
+    return;
+  }
+  if (realsize == 1) {
+    std::cout << begin[0] << "\n";
+    realsize--;
+    return;
+  }
+  int j = realsize - 1;
+  std::swap(begin[i], begin[j]);
+  realsize--;
+  SiftDownIndex(begin, i, realsize);
+  while (0 < i && begin[(i - 1) / 2] < begin[i]) {
+    std::swap(begin[(i - 1) / 2], begin[i]);
+    i = (i - 1) / 2;
+  }
+  std::cout << begin[j] << "\n";
+}
+
+int main() {
+  int n;
+  int m;
+  int type;
+  int value;
+  int realsize = 0;
+  std::cin >> n;
+  std::cin >> m;
+  auto numbers = new int[n];
+  for (int i = 0; i < m; ++i) {
+    std::cin >> type;
+    if (type == 1) {
+      DeleteMax(numbers, realsize);
+    }
+    if (type == 2) {
+      std::cin >> value;
+      if (realsize >= n) {
+        std::cout << -1 << "\n";
+      } else {
+        numbers[realsize] = value;
+        PushHeap(numbers, realsize);
+      }
+    }
+    if (type == 3) {
+      std::cin >> value;
+      DeleteIndex(numbers, value - 1, realsize);
+    }
+  }
+  for (int i = 0; i < realsize; ++i) {
+    std::cout << numbers[i] << " ";
+  }
+  delete[] numbers;
+}

@@ -1,0 +1,122 @@
+#include <iostream>
+#include <cstring>
+
+class List {
+ public:
+  List();
+  ~List();
+
+  void Pushback(int key);
+  void Popback();
+  int Back() const;
+  void Clear();
+
+ private:
+  class Node {
+   public:
+    int key;
+    Node* next;
+    Node* prev;
+    explicit Node(int key, Node* next = nullptr, Node* prev = nullptr) {
+      this->key = key;
+      this->next = next;
+      this->prev = prev;
+    }
+  };
+  int size_n_;
+  Node* head_;
+  Node* tail_;
+};
+
+List::List() {
+  size_n_ = 0;
+  head_ = nullptr;
+  tail_ = nullptr;
+}
+
+List::~List() = default;
+
+void List::Pushback(int key) {
+  if (head_ == nullptr) {
+    head_ = new Node(key);
+    tail_ = head_;
+  } else {
+    Node* current = tail_;
+    current->next = new Node(key);
+    tail_ = current->next;
+    tail_->prev = current;
+  }
+  size_n_++;
+}
+
+void List::Popback() {
+  Node* temp = tail_;
+  tail_ = tail_->prev;
+  delete temp;
+  if (tail_ != nullptr) {
+    tail_->next = nullptr;
+  } else {
+    head_ = nullptr;
+  }
+  size_n_--;
+}
+
+int List::Back() const {
+  return tail_->key;
+}
+
+void List::Clear() {
+  while (head_ != nullptr) {
+    Node* current = head_->next;
+    delete head_;
+    head_ = current;
+  }
+  tail_ = nullptr;
+  size_n_ = 0;
+}
+
+void PolskaKur(char* str, List& calculator, int len) {
+  for (int i = 0; i < len; i++) {
+    if (isdigit(str[i])) {
+      calculator.Pushback(str[i] - 48);
+    } else {
+      int a = 0;
+      int b = 0;
+      if (str[i] == '+') {
+        a = calculator.Back();
+        calculator.Popback();
+        b = calculator.Back();
+        calculator.Popback();
+        calculator.Pushback(a + b);
+      } else {
+        if (str[i] == '-') {
+          a = calculator.Back();
+          calculator.Popback();
+          b = calculator.Back();
+          calculator.Popback();
+          calculator.Pushback(b - a);
+        } else {
+          if (str[i] == '*') {
+            a = calculator.Back();
+            calculator.Popback();
+            b = calculator.Back();
+            calculator.Popback();
+            calculator.Pushback(a * b);
+          }
+        }
+      }
+    }
+  }
+  std::cout << calculator.Back();
+}
+
+int main() {
+  List calculator;
+  int n = 100000000;
+  auto str = new char[n];
+  std::cin.get(str, n);
+  auto len = static_cast<int>(std::strlen(str));
+  PolskaKur(str, calculator, len);
+  calculator.Clear();
+  delete[] str;
+}

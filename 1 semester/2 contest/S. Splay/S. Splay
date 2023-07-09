@@ -1,0 +1,272 @@
+#include <iostream>
+
+class SplayTree {
+  struct Node {
+    explicit Node(int key) {
+      this->key = key;
+      parent = nullptr;
+      left = nullptr;
+      right = nullptr;
+    }
+    int key;
+    Node* parent;
+    Node* left;
+    Node* right;
+  };
+
+ public:
+  SplayTree() : root_(nullptr) {
+  }
+  ~SplayTree() = default;
+  void Clear() {
+    RecClear(root_);
+  }
+  int Next(int key) {
+    return RecNext(root_, key);
+  }
+  void Add(int key) {
+    InsertNode(root_, key);
+  }
+
+ private:
+  void InsertNode(Node* node, int key) {
+    if (node == nullptr) {
+      root_ = new Node(key);
+      return;
+    }
+    if (node->key > key) {
+      if (node->left == nullptr) {
+        node->left = new Node(key);
+        node->left->parent = node;
+        Splay(node->left);
+        return;
+      }
+      InsertNode(node->left, key);
+    } else if (node->key < key) {
+      if (node->right == nullptr) {
+        node->right = new Node(key);
+        node->right->parent = node;
+        Splay(node->right);
+        return;
+      }
+      InsertNode(node->right, key);
+    } else {
+      Splay(node);
+      return;
+    }
+  }
+  void Splay(Node* node) {
+    if (node == nullptr) {
+      return;
+    }
+    while (node->parent != nullptr) {
+      Node* parent = node->parent;
+      Node* grandparent = parent->parent;
+      if (grandparent == nullptr) {
+        Zig(node);
+      } else {
+        if (grandparent->left == parent && parent->left == node) {
+          ZigZig(node);
+        } else {
+          if (grandparent->right == parent && parent->right == node) {
+            ZigZig(node);
+          } else {
+            ZigZag(node);
+          }
+        }
+      }
+    }
+    root_ = node;
+  }
+  static void Zig(Node* value) {
+    Node* parent = value->parent;
+    if (parent->left == value) {
+      Node* temp = value->right;
+      value->parent = nullptr;
+      value->right = parent;
+      parent->parent = value;
+      parent->left = temp;
+      if (temp != nullptr) {
+        temp->parent = parent;
+      }
+      return;
+    }
+    Node* temp = value->left;
+    value->parent = nullptr;
+    value->left = parent;
+    parent->parent = value;
+    parent->right = temp;
+    if (temp != nullptr) {
+      temp->parent = parent;
+    }
+  }
+  void ZigZig(Node* value) {
+    Node* parent = value->parent;
+    Node* grandparent = parent->parent;
+    if (parent->left == value) {
+      Node* subright = value->right;
+      Node* pright = parent->right;
+      value->parent = grandparent->parent;
+      value->right = parent;
+      parent->parent = value;
+      parent->left = subright;
+      parent->right = grandparent;
+      grandparent->parent = parent;
+      grandparent->left = pright;
+      if (value->parent != nullptr) {
+        if (value->parent->left == grandparent) {
+          value->parent->left = value;
+        } else {
+          value->parent->right = value;
+        }
+      }
+      if (subright != nullptr) {
+        subright->parent = parent;
+      }
+      if (pright != nullptr) {
+        pright->parent = grandparent;
+      }
+    } else {
+      Node* subleft = parent->left;
+      Node* vleft = value->left;
+      value->parent = grandparent->parent;
+      value->left = parent;
+      parent->parent = value;
+      parent->right = vleft;
+      parent->left = grandparent;
+      grandparent->parent = parent;
+      grandparent->right = subleft;
+      if (value->parent != nullptr) {
+        if (value->parent->left == grandparent) {
+          value->parent->left = value;
+        } else {
+          value->parent->right = value;
+        }
+      }
+      if (subleft != nullptr) {
+        subleft->parent = grandparent;
+      }
+      if (vleft != nullptr) {
+        vleft->parent = parent;
+      }
+    }
+  }
+  void ZigZag(Node* value) {
+    Node* parent = value->parent;
+    Node* grandparent = parent->parent;
+    Node* subleft = value->left;
+    Node* subright = value->right;
+    if (parent->right == value) {
+      value->parent = grandparent->parent;
+      value->left = parent;
+      value->right = grandparent;
+      parent->parent = value;
+      parent->right = subleft;
+      grandparent->parent = value;
+      grandparent->left = subright;
+      if (value->parent != nullptr) {
+        if (value->parent->left == grandparent) {
+          value->parent->left = value;
+        } else {
+          value->parent->right = value;
+        }
+      }
+      if (subleft != nullptr) {
+        subleft->parent = parent;
+      }
+      if (subright != nullptr) {
+        subright->parent = grandparent;
+      }
+    } else {
+      value->parent = grandparent->parent;
+      value->left = grandparent;
+      value->right = parent;
+      parent->parent = value;
+      parent->left = subright;
+      grandparent->parent = value;
+      grandparent->right = subleft;
+      if (value->parent != nullptr) {
+        if (value->parent->left == grandparent) {
+          value->parent->left = value;
+        } else {
+          value->parent->right = value;
+        }
+      }
+      if (subleft != nullptr) {
+        subleft->parent = grandparent;
+      }
+      if (subright != nullptr) {
+        subright->parent = parent;
+      }
+    }
+  }
+  int RecNext(Node*(&elem), int key) {
+    int variable = -1;
+    Node* temp = elem;
+    while (true) {
+      if (elem == nullptr) {
+        return -1;
+      }
+      while (temp->key < key && temp->right != nullptr) {
+        temp = temp->right;
+      }
+      if (temp->key >= key) {
+        variable = temp->key;
+      }
+      if (temp->left == nullptr && temp->right == nullptr) {
+        if (variable < key) {
+          return -1;
+        }
+        return variable;
+      }
+      if (temp->key == key) {
+        return temp->key;
+      }
+      if (temp->left != nullptr) {
+        temp = temp->left;
+      } else {
+        return variable;
+      }
+    }
+  }
+  void RecClear(Node* node) {
+    if (node == nullptr) {
+      return;
+    }
+    RecClear(node->left);
+    RecClear(node->right);
+    delete node;
+  }
+  Node* root_;
+};
+
+void Sosna() {
+  SplayTree sosna;
+  int n;
+  int key;
+  char last = '+';
+  char request;
+  int last_request = -1;
+  std::cin >> n;
+  for (int i = 0; i < n; ++i) {
+    std::cin >> request;
+    std::cin >> key;
+    if (request == '+') {
+      if (last == '+') {
+        sosna.Add(key);
+      } else {
+        sosna.Add((last_request + key) % 1000000000);
+      }
+      last = '+';
+    } else {
+      std::cout << sosna.Next(key) << "\n";
+      last_request = sosna.Next(key);
+      last = '?';
+    }
+  }
+  sosna.Clear();
+}
+
+int main() {
+  Sosna();
+}

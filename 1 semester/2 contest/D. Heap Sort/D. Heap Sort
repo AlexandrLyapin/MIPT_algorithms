@@ -1,0 +1,48 @@
+#ifndef BOBA
+#define BOBA
+
+template <typename S>
+void Swap(S* data, long long i, long long j) {
+  S c = data[i];
+  data[i] = data[j];
+  data[j] = c;
+}
+
+template <typename T>
+void SiftDown(T* begin, int n, int i) {
+  int largest = i;
+  int l = 2 * i + 1;
+  int r = 2 * i + 2;
+  if (l < n && begin[largest] < begin[l]) {
+    largest = l;
+  }
+  if (r < n && begin[largest] < begin[r]) {
+    largest = r;
+  }
+  if (largest != i) {
+    Swap(begin, largest, i);
+    SiftDown(begin, n, largest);
+  }
+}
+
+template <typename T>
+void MakeHeap(T* begin, T* end) {
+  int n = end - begin;
+
+  for (int i = ((n - 1) / 2); i >= 0; --i) {
+    SiftDown(begin, n, i);
+  }
+}
+
+template <typename T>
+void SortHeap(T* begin, T* end) {
+  int n = end - begin;
+  int k = 1;
+  for (int i = n - 1; i >= 0; --i) {
+    Swap(begin, i, 0);
+    SiftDown(begin, i, 0);
+    k++;
+  }
+}
+
+#endif

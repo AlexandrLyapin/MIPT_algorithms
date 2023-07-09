@@ -1,0 +1,149 @@
+#include <iostream>
+#include <cstring>
+
+class List {
+ public:
+  List();
+  ~List();
+
+  void Pushback(int key);
+  void Pushfront(int key);
+  void Popfront();
+  void Popback();
+  int Size() {
+    return size_n_;
+  }
+  int Front();
+  int Back();
+  void Clear();
+
+ private:
+  class Node {
+   public:
+    int key;
+    Node* next;
+    Node* prev;
+    explicit Node(int key, Node* next = nullptr, Node* prev = nullptr) {
+      this->key = key;
+      this->next = next;
+      this->prev = prev;
+    }
+  };
+  int size_n_;
+  Node* head_;
+  Node* tail_;
+};
+
+List::List() {
+  size_n_ = 0;
+  head_ = nullptr;
+  tail_ = nullptr;
+}
+
+List::~List() = default;
+
+void List::Pushback(int key) {
+  if (head_ == nullptr) {
+    head_ = new Node(key);
+    tail_ = head_;
+  } else {
+    Node* current = tail_;
+    current->next = new Node(key);
+    tail_ = current->next;
+    tail_->prev = current;
+  }
+  size_n_++;
+}
+
+void List::Pushfront(int key) {
+  if (tail_ == nullptr) {
+    tail_ = new Node(key);
+    head_ = tail_;
+  } else {
+    Node* current = head_;
+    current->prev = new Node(key);
+    head_ = current->prev;
+    head_->next = current;
+  }
+  size_n_++;
+}
+
+void List::Popfront() {
+  Node* temp = head_;
+  head_ = head_->next;
+  delete temp;
+  if (head_ != nullptr) {
+    head_->prev = nullptr;
+  } else {
+    tail_ = nullptr;
+  }
+  size_n_--;
+}
+
+void List::Popback() {
+  Node* temp = tail_;
+  tail_ = tail_->prev;
+  delete temp;
+  if (tail_ != nullptr) {
+    tail_->next = nullptr;
+  } else {
+    head_ = nullptr;
+  }
+  size_n_--;
+}
+
+int List::Front() {
+  return head_->key;
+}
+
+int List::Back() {
+  return tail_->key;
+}
+
+void List::Clear() {
+  while (head_ != nullptr) {
+    Node* current = head_->next;
+    delete head_;
+    head_ = current;
+  }
+  tail_ = nullptr;
+  size_n_ = 0;
+}
+
+void Goblins(int n) {
+  int key;
+  List list1;
+  List list2;
+  char operation;
+  while (n--) {
+    std::cin >> operation;
+    if (operation == '+') {
+      std::cin >> key;
+      list2.Pushback(key);
+    } else {
+      if (operation == '*') {
+        std::cin >> key;
+        list1.Pushback(key);
+      } else {
+        std::cout << list1.Front() << "\n";
+        list1.Popfront();
+      }
+    }
+    while (list1.Size() < list2.Size()) {
+      list1.Pushback(list2.Front());
+      list2.Popfront();
+    }
+    while (list1.Size() > list2.Size() + 1) {
+      list2.Pushfront(list1.Back());
+      list1.Popback();
+    }
+  }
+  list1.Clear();
+  list2.Clear();
+}
+
+int main() {
+  int n;
+  std::cin >> n;
+  Goblins(n);
+}

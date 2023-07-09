@@ -1,0 +1,136 @@
+#include <iostream>
+#include <limits>
+
+struct Node {
+  int key;
+  Node* left;
+  Node* right;
+  explicit Node(int key, Node* left = nullptr, Node* right = nullptr) {
+    this->key = key;
+    this->left = left;
+    this->right = right;
+  }
+};
+
+class BST {
+ public:
+  BST();
+  ~BST();
+  int height;
+  int max;
+  int maxmax;
+  Node* root;
+  void Push(int key);
+  int Height() const;
+  void RecursiveClear(Node* elem);
+  void Clear();
+  int Max() const;
+};
+
+BST::BST() {
+  height = 0;
+  max = std::numeric_limits<int>::min();
+  maxmax = std::numeric_limits<int>::min();
+  root = nullptr;
+}
+
+BST::~BST() = default;
+
+void BST::Push(int key) {
+  if (root == nullptr) {
+    root = new Node(key);
+    height = 1;
+  } else {
+    int k = 1;
+    Node* temp = root;
+    while (temp->left != nullptr || temp->right != nullptr) {
+      if (key == temp->key) {
+        return;
+      }
+      if (key > temp->key) {
+        if (temp->right == nullptr) {
+          break;
+        }
+        temp = temp->right;
+      } else {
+        if (temp->left == nullptr) {
+          break;
+        }
+        temp = temp->left;
+      }
+      k++;
+    }
+    k++;
+    if (k > height) {
+      height = k;
+    }
+    if (key == temp->key) {
+      return;
+    }
+    if (key > temp->key) {
+      temp->right = new Node(key);
+    } else {
+      temp->left = new Node(key);
+    }
+  }
+  if (height == 1 || height == 2) {
+    if (height == 1) {
+      if (maxmax < key) {
+        maxmax = key;
+      }
+    }
+    if (height == 2) {
+      if (key > maxmax) {
+        max = maxmax;
+        maxmax = key;
+      } else {
+        max = key;
+      }
+    }
+  } else {
+    if (key > maxmax) {
+      max = maxmax;
+      maxmax = key;
+    } else {
+      if (key > max) {
+        max = key;
+      }
+    }
+  }
+}
+
+int BST::Height() const {
+  return height;
+}
+
+void BST::RecursiveClear(Node* elem) {
+  if (elem != nullptr) {
+    RecursiveClear(elem->left);
+    RecursiveClear(elem->right);
+    delete elem;
+  }
+}
+
+void BST::Clear() {
+  RecursiveClear(root);
+}
+
+int BST::Max() const {
+  return max;
+}
+
+void Sosna() {
+  BST sosna;
+  int value;
+  std::cin >> value;
+  while (value != 0) {
+    sosna.Push(value);
+    std::cin >> value;
+  }
+  std::cout << sosna.Max();
+  sosna.Clear();
+}
+
+int main() {
+  Sosna();
+}

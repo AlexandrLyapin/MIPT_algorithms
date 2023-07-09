@@ -1,0 +1,102 @@
+#include <iostream>
+
+struct Node {
+  int key;
+  Node* left;
+  Node* right;
+  explicit Node(int key, Node* left = nullptr, Node* right = nullptr) {
+    this->key = key;
+    this->left = left;
+    this->right = right;
+  }
+};
+
+class Tree {
+ public:
+  Tree();
+  ~Tree();
+  int height;
+  Node* root;
+  void Push(int key);
+  int Height() const;
+  void RecursiveClear(Node* elem);
+  void Clear();
+};
+
+Tree::Tree() {
+  height = 0;
+  root = nullptr;
+}
+
+Tree::~Tree() = default;
+
+void Tree::Push(int key) {
+  if (root == nullptr) {
+    root = new Node(key);
+    height = 1;
+  } else {
+    int k = 1;
+    Node* temp = root;
+    while (temp->left != nullptr || temp->right != nullptr) {
+      if (key == temp->key) {
+        return;
+      }
+      if (key > temp->key) {
+        if (temp->right == nullptr) {
+          break;
+        }
+        temp = temp->right;
+      } else {
+        if (temp->left == nullptr) {
+          break;
+        }
+        temp = temp->left;
+      }
+      k++;
+    }
+    k++;
+    if (k > height) {
+      height = k;
+    }
+    if (key == temp->key) {
+      return;
+    }
+    if (key > temp->key) {
+      temp->right = new Node(key);
+    } else {
+      temp->left = new Node(key);
+    }
+  }
+}
+
+int Tree::Height() const {
+  return height;
+}
+
+void Tree::RecursiveClear(Node* elem) {
+  if (elem != nullptr) {
+    RecursiveClear(elem->left);
+    RecursiveClear(elem->right);
+    delete elem;
+  }
+}
+
+void Tree::Clear() {
+  RecursiveClear(root);
+}
+
+void Sosna() {
+  Tree sosna;
+  int value;
+  std::cin >> value;
+  while (value != 0) {
+    sosna.Push(value);
+    std::cin >> value;
+  }
+  std::cout << sosna.Height();
+  sosna.Clear();
+}
+
+int main() {
+  Sosna();
+}

@@ -1,0 +1,198 @@
+#include <iostream>
+#include <cstring>
+#include <limits>
+
+struct Node {
+  int key;
+  int min;
+  Node* next = nullptr;
+  Node* prev = nullptr;
+  explicit Node(int key, int min = std::numeric_limits<int>::max(), Node* next = nullptr, Node* prev = nullptr) {
+    this->key = key;
+    this->min = min;
+    this->next = next;
+    this->prev = prev;
+  }
+};
+
+class Minstack {
+  int size_n_;
+  Node* head_;
+  Node* tail_;
+
+ public:
+  Minstack();
+  ~Minstack();
+
+  void Push(int key);
+  void Pop();
+  int Back() const;
+  int Size() const;
+  int Min() const;
+};
+
+class Minqueue {
+ public:
+  Minstack first;
+  Minstack second;
+
+  void Enqueue(int key);
+  void Dequeue();
+  int Front();
+  int Size();
+  void Clear();
+  int Min();
+};
+
+Minstack::Minstack() {
+  size_n_ = 0;
+  head_ = nullptr;
+  tail_ = nullptr;
+}
+
+Minstack::~Minstack() = default;
+
+void Minstack::Push(int key) {
+  if (head_ == nullptr) {
+    head_ = new Node(key);
+    tail_ = head_;
+    if (tail_->min > key) {
+      tail_->min = key;
+    }
+  } else {
+    Node* current = tail_;
+    current->next = new Node(key);
+    tail_ = current->next;
+    if (tail_->min > current->min) {
+      if (key < current->min) {
+        tail_->min = key;
+      } else {
+        tail_->min = current->min;
+      }
+    }
+    tail_->prev = current;
+  }
+  size_n_++;
+}
+
+void Minstack::Pop() {
+  Node* temp = tail_;
+  tail_ = tail_->prev;
+  delete temp;
+  if (tail_ != nullptr) {
+    tail_->next = nullptr;
+  } else {
+    head_ = nullptr;
+  }
+  size_n_--;
+}
+
+int Minstack::Back() const {
+  return tail_->key;
+}
+
+int Minstack::Size() const {
+  return size_n_;
+}
+
+int Minstack::Min() const {
+  return tail_->min;
+}
+
+void Minqueue::Enqueue(int key) {
+  second.Push(key);
+}
+
+void Minqueue::Dequeue() {
+  if (first.Size() != 0 || second.Size() != 0) {
+    if (first.Size() == 0 && second.Size() != 0) {
+      while (second.Size() != 0) {
+        first.Push(second.Back());
+        second.Pop();
+      }
+      first.Pop();
+    } else {
+      first.Pop();
+    }
+  }
+}
+
+int Minqueue::Front() {
+  if (first.Size() == 0 && second.Size() != 0) {
+    while (second.Size() != 0) {
+      first.Push(second.Back());
+      second.Pop();
+    }
+    return first.Back();
+  }
+  return first.Back();
+}
+
+int Minqueue::Size() {
+  return first.Size() + second.Size();
+}
+
+void Minqueue::Clear() {
+  while (first.Size() != 0) {
+    first.Pop();
+  }
+  while (second.Size() != 0) {
+    second.Pop();
+  }
+}
+
+int Minqueue::Min() {
+  if (first.Size() != 0 && second.Size() != 0) {
+    return std::min(first.Min(), second.Min());
+  }
+  if (second.Size() == 0) {
+    return first.Min();
+  }
+  return second.Min();
+}
+
+int main() {
+  Minqueue lst;
+  int n;
+  char c[20];
+  std::cin >> n;
+  for (int i = 0; i < n; ++i) {
+    std::cin >> c;
+    if (std::strcmp(c, "enqueue") == 0) {
+      int value;
+      std::cin >> value;
+      std::cout << "ok\n";
+      lst.Enqueue(value);
+    }
+    if (std::strcmp(c, "dequeue") == 0) {
+      if (lst.Size() != 0) {
+        std::cout << lst.Front() << "\n";
+        lst.Dequeue();
+      } else {
+        std::cout << "error\n";
+      }
+    }
+    if (std::strcmp(c, "front") == 0) {
+      if (lst.Size() != 0) {
+        std::cout << lst.Front() << "\n";
+      } else {
+        std::cout << "error\n";
+      }
+    }
+    if (std::strcmp(c, "size") == 0) {
+      std::cout << lst.Size() << "\n";
+    }
+    if (std::strcmp(c, "clear") == 0) {
+      lst.Clear();
+      std::cout << "ok\n";
+    }
+    if (std::strcmp(c, "min") == 0) {
+      if (lst.Size() != 0) {
+        std::cout << lst.Min() << "\n";
+      } else {
+        std::cout << "error\n";
+      }
+    }
+  }
+  lst.Clear();
+}

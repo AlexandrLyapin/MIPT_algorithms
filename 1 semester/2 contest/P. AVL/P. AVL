@@ -1,0 +1,192 @@
+#include <iostream>
+#include <cstring>
+
+struct Node {
+  int key;
+  Node* left;
+  Node* right;
+  int height;
+  explicit Node(int key, int height = 1, Node* left = nullptr, Node* right = nullptr) {
+    this->key = key;
+    this->height = height;
+    this->left = left;
+    this->right = right;
+  }
+};
+
+class BST {
+  Node* root_;
+
+ public:
+  BST();
+  ~BST();
+  int Height(Node* elem) const;
+  int BalanceFactor(Node* elem) const;
+  void FixHeight(Node* elem);
+  Node* TurnLeft(Node* elem);
+  Node* TurnRight(Node* elem);
+  Node* Balance(Node* elem);
+  void Push(Node*(&elem), int key);
+  void Add(int key);
+  int RecNext(Node*(&elem), int key);
+  int Next(int key);
+  void RecursiveClear(Node* elem);
+  void Clear();
+};
+
+BST::BST() {
+  root_ = nullptr;
+}
+
+BST::~BST() = default;
+
+int BST::Height(Node* elem) const {
+  if (elem != nullptr) {
+    return elem->height;
+  }
+  return 0;
+}
+
+int BST::BalanceFactor(Node* elem) const {
+  return Height(elem->right) - Height(elem->left);
+}
+
+void BST::FixHeight(Node* elem) {
+  if (Height(elem->left) > Height(elem->right)) {
+    elem->height = Height(elem->left) + 1;
+  } else {
+    elem->height = Height(elem->right) + 1;
+  }
+}
+
+Node* BST::TurnRight(Node* elem) {
+  Node* leftsubtree = elem->left;
+  elem->left = leftsubtree->right;
+  leftsubtree->right = elem;
+  FixHeight(elem);
+  FixHeight(leftsubtree);
+  return leftsubtree;
+}
+
+Node* BST::TurnLeft(Node* elem) {
+  Node* rightsubtree = elem->right;
+  elem->right = rightsubtree->left;
+  rightsubtree->left = elem;
+  FixHeight(elem);
+  FixHeight(rightsubtree);
+  return rightsubtree;
+}
+
+Node* BST::Balance(Node* elem) {
+  FixHeight(elem);
+  if (BalanceFactor(elem) == 2) {
+    if (BalanceFactor(elem->right) < 0) {
+      elem->right = TurnRight(elem->right);
+    }
+    return TurnLeft(elem);
+  }
+  if (BalanceFactor(elem) == -2) {
+    if (BalanceFactor(elem->left) > 0) {
+      elem->left = TurnLeft(elem->left);
+    }
+    return TurnRight(elem);
+  }
+  return elem;
+}
+
+void BST::Push(Node*(&elem), int key) {
+  if (elem == nullptr) {
+    elem = new Node(key);
+  } else {
+    if (elem->key == key) {
+      return;
+    }
+    if (key < elem->key) {
+      Push(elem->left, key);
+    } else {
+      Push(elem->right, key);
+    }
+  }
+  elem = Balance(elem);
+}
+
+void BST::Add(int key) {
+  Push(root_, key);
+}
+
+int BST::RecNext(Node*(&elem), int key) {
+  int variable = -1;
+  Node* temp = elem;
+  while (true) {
+    if (elem == nullptr) {
+      return -1;
+    }
+    while (temp->key < key && temp->right != nullptr) {
+      temp = temp->right;
+    }
+    if (temp->key >= key) {
+      variable = temp->key;
+    }
+    if (temp->left == nullptr && temp->right == nullptr) {
+      if (variable < key) {
+        return -1;
+      }
+      return variable;
+    }
+    if (temp->key == key) {
+      return temp->key;
+    }
+    if (temp->left != nullptr) {
+      temp = temp->left;
+    } else {
+      return variable;
+    }
+  }
+}
+
+int BST::Next(int key) {
+  return RecNext(root_, key);
+}
+
+void BST::RecursiveClear(Node* elem) {
+  if (elem != nullptr) {
+    RecursiveClear(elem->left);
+    RecursiveClear(elem->right);
+    delete elem;
+  }
+}
+
+void BST::Clear() {
+  RecursiveClear(root_);
+}
+
+void Sosna() {
+  BST sosna;
+  int n;
+  int key;
+  char last = '+';
+  char request;
+  int last_request = -1;
+  std::cin >> n;
+  for (int i = 0; i < n; ++i) {
+    std::cin >> request;
+    std::cin >> key;
+    if (request == '+') {
+      if (last == '+') {
+        sosna.Add(key);
+      } else {
+        sosna.Add((last_request + key) % 1000000000);
+      }
+      last = '+';
+    } else {
+      std::cout << sosna.Next(key) << "\n";
+      last_request = sosna.Next(key);
+      last = '?';
+    }
+  }
+  sosna.Clear();
+}
+
+int main() {
+  Sosna();
+}
