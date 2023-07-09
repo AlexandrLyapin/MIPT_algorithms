@@ -1,0 +1,133 @@
+#include <iostream>
+#include <algorithm>
+#include <queue>
+#include <limits>
+#include <vector>
+
+class Graph {
+ public:
+  int n, m;
+  std::vector<int> parent;
+  std::vector<int> rank;
+
+  int FindSet(int x) {
+    if (parent[x] == -1) {
+      return -1;
+    }
+
+    while (x != parent[x]) {
+      x = parent[x];
+    }
+
+    return x;
+  }
+
+  void Union(int first, int second) {
+    if (rank[first] >= rank[second]) {
+      parent[second] = first;
+      if (rank[second] == rank[first]) {
+        ++rank[first];
+      }
+      rank[second] = -1;
+    } else {
+      parent[first] = second;
+      if (rank[first] == rank[second]) {
+        ++rank[second];
+      }
+      rank[first] = -1;
+    }
+  }
+};
+
+void BridgeSearch(Graph& graph) {
+  if (graph.m < graph.n - 1) {
+    std::cout << graph.m;
+    return;
+  }
+
+  for (int i = 0; i < graph.n - 1; ++i) {
+    int v1 = 0;
+    int v2 = 0;
+    std::cin >> v1 >> v2;
+
+    int first = graph.FindSet(v1);
+    int second = graph.FindSet(v2);
+
+    if (first == -1 && second == -1) {
+      graph.parent[v1] = v1;
+      graph.parent[v2] = v1;
+      graph.rank[v1] = 1;
+      continue;
+    }
+
+    if (first != -1 && second != -1) {
+      if (first != second) {
+        graph.Union(first, second);
+        continue;
+      }
+    }
+
+    if (first != -1 && second == -1) {
+      graph.parent[v2] = first;
+      continue;
+    }
+
+    if (first == -1 && second != -1) {
+      graph.parent[v1] = second;
+      continue;
+    }
+  }
+
+  int main_count = graph.n - 1;
+  int count = main_count;
+
+  for (int i = graph.n - 1; i < graph.m; ++i) {
+    int v1 = 0;
+    int v2 = 0;
+    std::cin >> v1 >> v2;
+
+    int first = graph.FindSet(v1);
+    int second = graph.FindSet(v2);
+
+    if (first == -1 && second == -1) {
+      graph.parent[v1] = v1;
+      graph.parent[v2] = v1;
+      graph.rank[v1] = 1;
+      ++count;
+      main_count = count;
+    }
+
+    if (first != -1 && second != -1) {
+      if (first != second) {
+        graph.Union(first, second);
+        main_count = count + 1;
+      }
+      ++count;
+    }
+
+    if (first != -1 && second == -1) {
+      graph.parent[v2] = first;
+      ++count;
+      main_count = count;
+    }
+
+    if (first == -1 && second != -1) {
+      graph.parent[v1] = second;
+      ++count;
+      main_count = count;
+    }
+  }
+
+  std::cout << main_count;
+}
+
+int main() {
+  Graph graph;
+
+  std::cin >> graph.n >> graph.m;
+
+  graph.parent.resize(graph.n, -1);
+  graph.rank.resize(graph.n, -1);
+
+  BridgeSearch(graph);
+}

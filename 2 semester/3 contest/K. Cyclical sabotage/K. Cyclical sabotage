@@ -1,0 +1,135 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <limits>
+#include <iterator>
+#include <algorithm>
+
+struct Pair {
+  int vert;
+  int weight;
+};
+
+class Graph {
+ public:
+  int n;
+
+  std::vector<std::vector<Pair>> adjacency_list;
+  std::vector<int64_t> dist;
+  std::vector<int> prev;
+  std::vector<int> negative_cycle;
+  int last;
+
+  void Relax() {
+    last = -1;
+    constexpr int kMax = 100000;
+    for (int i = 0; i < n; ++i) {
+      for (size_t j = 0; j < adjacency_list[i].size(); ++j) {
+        if (dist[adjacency_list[i][j].vert] > dist[i] + adjacency_list[i][j].weight) {
+          if (dist[i] != kMax || dist[adjacency_list[i][j].vert] != kMax) {
+            dist[adjacency_list[i][j].vert] = dist[i] + adjacency_list[i][j].weight;
+            prev[adjacency_list[i][j].vert] = i;
+            last = adjacency_list[i][j].vert;
+          }
+        }
+      }
+    }
+  }
+
+  bool NegativeCycle() {
+    for (int i = 0; i < n - 1; ++i) {
+      Relax();
+    }
+
+    std::vector<int64_t> firstdist = dist;
+
+    Relax();
+
+    if (last == -1) {
+      return false;
+    }
+
+    std::vector<int> cycle_search;
+    std::vector<bool> used;
+    used.resize(n, false);
+    bool found = false;
+
+    while (!found) {
+      if (!used[last]) {
+        cycle_search.push_back(last);
+        used[last] = true;
+      } else {
+        cycle_search.push_back(last);
+        break;
+      }
+      last = prev[last];
+    }
+
+    int first_neg_vert = cycle_search[cycle_search.size() - 1];
+    for (int i = static_cast<int>(cycle_search.size() - 1); i >= 0; --i) {
+      if (i == static_cast<int>(cycle_search.size() - 1)) {
+        negative_cycle.push_back(cycle_search[i]);
+      } else {
+        if (cycle_search[i] == first_neg_vert) {
+          negative_cycle.push_back(cycle_search[i]);
+          break;
+        }
+        negative_cycle.push_back(cycle_search[i]);
+      }
+    }
+
+    return true;
+  }
+};
+
+int main() {
+  std::ios_base::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  Graph graph;
+
+  std::cin >> graph.n;
+
+  graph.adjacency_list.reserve(graph.n);
+  graph.dist.resize(graph.n, 100000);
+  graph.prev.resize(graph.n, -1);
+  graph.dist[0] = 0;
+
+  for (int i = 0; i < graph.n; ++i) {
+    std::vector<Pair> push_vector;
+    graph.adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < graph.n; ++i) {
+    for (int j = 0; j < graph.n; ++j) {
+      int vert1 = i;
+      int vert2 = j;
+      int weight = 0;
+      std::cin >> weight;
+      if (i == j) {
+        if (weight < 0) {
+          std::cout << "YES\n"
+                    << "2\n"
+                    << i + 1 << " " << i + 1;
+          return 0;
+        }
+      }
+      Pair pair1{vert2, weight};
+      if (weight != 100000) {
+        graph.adjacency_list[vert1].push_back(pair1);
+      }
+    }
+  }
+
+  if (!graph.NegativeCycle()) {
+    std::cout << "NO";
+  } else {
+    std::cout << "YES\n";
+    std::cout << graph.negative_cycle.size() << "\n";
+    if (static_cast<int>(graph.negative_cycle.size()) <= graph.n + 1) {
+      for (size_t i = 0; i < graph.negative_cycle.size(); ++i) {
+        std::cout << graph.negative_cycle[i] + 1 << " ";
+      }
+    }
+  }
+}

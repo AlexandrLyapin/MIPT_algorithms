@@ -1,0 +1,87 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+
+struct Pair {
+  int vert;
+  int weight;
+};
+
+class Compare {
+ public:
+  bool operator()(const Pair& lhs, const Pair& rhs) {
+    return lhs.weight > rhs.weight;
+  }
+};
+
+class Graph {
+ public:
+  int n, m;
+
+  std::vector<std::vector<Pair>> adjacency_list;
+};
+
+void Prim(Graph& graph) {
+  std::priority_queue<Pair, std::vector<Pair>, Compare> heap;
+
+  int sum = 0;
+
+  std::vector<bool> used;
+  used.resize(graph.n, false);
+  used[0] = true;
+
+  for (size_t i = 0; i < graph.adjacency_list[0].size(); ++i) {
+    heap.push(graph.adjacency_list[0][i]);
+  }
+
+  while (!heap.empty()) {
+    int vert = heap.top().vert;
+    int weight = heap.top().weight;
+
+    heap.pop();
+
+    if (!used[vert]) {
+      sum += weight;
+      used[vert] = true;
+      for (size_t i = 0; i < graph.adjacency_list[vert].size(); ++i) {
+        if (!used[graph.adjacency_list[vert][i].vert]) {
+          heap.push(graph.adjacency_list[vert][i]);
+        }
+      }
+    }
+  }
+
+  std::cout << sum;
+}
+
+int main() {
+  std::ios_base::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  Graph graph;
+
+  std::cin >> graph.n >> graph.m;
+
+  graph.adjacency_list.reserve(graph.n);
+
+  for (int i = 0; i < graph.n; ++i) {
+    std::vector<Pair> push_vector;
+    graph.adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < graph.m; ++i) {
+    int first = 0;
+    int second = 0;
+    int weight = 0;
+    std::cin >> first >> second >> weight;
+    --first;
+    --second;
+    Pair pair1{second, weight};
+    Pair pair2{first, weight};
+
+    graph.adjacency_list[first].push_back(pair1);
+    graph.adjacency_list[second].push_back(pair2);
+  }
+
+  Prim(graph);
+}

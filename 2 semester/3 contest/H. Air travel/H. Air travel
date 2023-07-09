@@ -1,0 +1,81 @@
+#include <iostream>
+#include <tuple>
+#include <limits>
+#include <vector>
+
+class Graph {
+ public:
+  int n = 0;
+  int m = 0;
+  int k = 0;
+  int s = 0;
+  int f = 0;
+
+  std::vector<std::tuple<int, int, int>> adjacency_list;
+  std::vector<std::vector<int>> dist;
+
+  int AirTravel() {
+    bool relaxed = false;
+    while (!relaxed) {
+      bool used = false;
+      for (int i = 1; i < k + 1; ++i) {
+        for (auto& flight : adjacency_list) {
+          int u = 0;
+          int v = 0;
+          int w = 0;
+          std::tie(u, v, w) = flight;
+          if (dist[i - 1][u] != std::numeric_limits<int>::max()) {
+            if (dist[i][v] > dist[i - 1][u] + w) {
+              dist[i][v] = dist[i - 1][u] + w;
+              used = true;
+            }
+          }
+        }
+      }
+
+      if (!used) {
+        relaxed = true;
+      }
+    }
+
+    int min = std::numeric_limits<int>::max();
+    for (int night = 0; night <= k; night++) {
+      if (dist[night][f - 1] < min) {
+        min = dist[night][f - 1];
+      }
+    }
+
+    if (min != std::numeric_limits<int>::max()) {
+      return min;
+    }
+
+    return -1;
+  }
+};
+
+int main() {
+  Graph graph;
+  std::cin >> graph.n >> graph.m >> graph.k >> graph.s >> graph.f;
+
+  for (int i = 0; i < graph.m; ++i) {
+    int first = 0;
+    int second = 0;
+    int cost = 0;
+    std::cin >> first >> second >> cost;
+    graph.adjacency_list.emplace_back(first - 1, second - 1, cost);
+  }
+
+  graph.dist.resize(graph.k + 1);
+
+  for (int i = 0; i < graph.k + 1; ++i) {
+    for (int j = 0; j < graph.n; ++j) {
+      if (i == 0 && j == graph.s - 1) {
+        graph.dist[i].push_back(0);
+      } else {
+        graph.dist[i].push_back(std::numeric_limits<int>::max());
+      }
+    }
+  }
+
+  std::cout << graph.AirTravel();
+}

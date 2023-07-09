@@ -1,0 +1,128 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <limits>
+
+struct Edge {
+  int64_t next;
+  int64_t vert;
+  Edge *back;
+};
+
+int64_t DFS(int64_t v, int64_t last, std::vector<std::vector<Edge *>> &adj_list, std::vector<int64_t> &dist,
+            std::vector<int64_t> &pos, int64_t min, int64_t flow = std::numeric_limits<int64_t>::max()) {
+  if (v == last) {
+    return flow;
+  }
+
+  while (pos[v] < static_cast<int64_t>(adj_list[v].size())) {
+    auto edge = adj_list[v][pos[v]];
+
+    if (dist[edge->next] == dist[v] + 1 && min <= edge->vert) {
+      int64_t finish = DFS(edge->next, last, adj_list, dist, pos, min, std::min(flow, edge->vert));
+
+      if (finish) {
+        edge->vert -= finish;
+        edge->back->vert += finish;
+
+        return finish;
+      }
+    }
+
+    ++pos[v];
+  }
+
+  return 0;
+}
+
+void BFS(std::vector<std::vector<Edge *>> &adj_list, std::vector<int64_t> &dist, int64_t min, int64_t start) {
+  for (size_t i = 0; i < dist.size(); ++i) {
+    dist[i] = std::numeric_limits<int64_t>::max();
+  }
+  dist[start] = 0;
+
+  std::queue<int64_t> queue;
+  queue.push(start);
+
+  while (!queue.empty()) {
+    int64_t v = queue.front();
+    queue.pop();
+
+    for (auto &vert : adj_list[v]) {
+      if (dist[vert->next] == static_cast<int64_t>(std::numeric_limits<int64_t>::max()) && min <= vert->vert) {
+        dist[vert->next] = dist[v] + 1;
+        queue.push(vert->next);
+      }
+    }
+  }
+}
+
+void Completion(int64_t m, std::vector<std::vector<Edge *>> &adj_list) {
+  for (int64_t i = 0; i < m; ++i) {
+    int64_t first = 0;
+    int64_t second = 0;
+    int64_t vert = 0;
+
+    std::cin >> first >> second >> vert;
+    --first;
+    --second;
+
+    Edge *first_second = new Edge;
+    Edge *second_first = new Edge;
+
+    first_second->next = second;
+    first_second->vert = vert;
+    first_second->back = second_first;
+    second_first->next = first;
+    second_first->vert = 0;
+    second_first->back = first_second;
+    adj_list[first].emplace_back(first_second);
+    adj_list[second].emplace_back(second_first);
+  }
+}
+
+void Del(int64_t n, std::vector<std::vector<Edge *>> &adj_list) {
+  for (int64_t i = 0; i < n; ++i) {
+    for (size_t j = 0; j < adj_list[i].size(); ++j) {
+      delete adj_list[i][j];
+    }
+  }
+}
+
+void Answer(int64_t n, int64_t &flow, int64_t &delta, std::vector<std::vector<Edge *>> &adj_list,
+            std::vector<int64_t> &dist, std::vector<int64_t> &position) {
+  for (int64_t i = 29; i >= 0; --i) {
+    do {
+      BFS(adj_list, dist, 1 << i, 0);
+      for (int64_t v = 0; v < n; ++v) {
+        position[v] = 0;
+      }
+      do {
+        delta = DFS(0, n - 1, adj_list, dist, position, 1 << i);
+        flow += delta;
+      } while (delta);
+    } while (dist[n - 1] < static_cast<int64_t>(std::numeric_limits<int64_t>::max()));
+  }
+}
+
+int main() {
+  int64_t n = 0;
+  int64_t m = 0;
+  std::cin >> n >> m;
+
+  std::vector<std::vector<Edge *>> adj_list(n);
+
+  Completion(m, adj_list);
+
+  std::vector<int64_t> dist(n);
+  std::vector<int64_t> position(n);
+
+  int64_t flow = 0;
+  int64_t delta = 0;
+
+  Answer(n, flow, delta, adj_list, dist, position);
+
+  std::cout << flow;
+
+  Del(n, adj_list);
+}

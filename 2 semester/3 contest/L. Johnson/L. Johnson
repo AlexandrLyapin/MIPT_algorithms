@@ -1,0 +1,164 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <limits>
+
+struct Pair {
+  int64_t vert;
+  int64_t weight;
+};
+
+struct Dist {
+  int64_t dist;
+  int64_t v;
+};
+
+class Compare {
+ public:
+  bool operator()(const Dist& lhs, const Dist& rhs) {
+    return lhs.dist > rhs.dist;
+  }
+};
+
+class Graph {
+ public:
+  int n, m;
+
+  std::vector<std::vector<Pair>> adjacency_list;
+  std::vector<int64_t> potential;
+  std::vector<std::vector<int64_t>> matrix;
+
+  void Relax() {
+    constexpr int kMax = std::numeric_limits<int>::max();
+    for (int i = 0; i < n + 1; ++i) {
+      for (size_t j = 0; j < adjacency_list[i].size(); ++j) {
+        if (potential[adjacency_list[i][j].vert] > potential[i] + adjacency_list[i][j].weight) {
+          if (potential[i] != kMax || potential[adjacency_list[i][j].vert] != kMax) {
+            potential[adjacency_list[i][j].vert] = potential[i] + adjacency_list[i][j].weight;
+          }
+        }
+      }
+    }
+  }
+
+  void FordBellman() {
+    for (int i = 0; i < n - 1; ++i) {
+      Relax();
+    }
+  }
+
+  std::vector<int64_t> Dijkstra(int start) {
+    std::vector<int64_t> dist;
+    dist.resize(n, std::numeric_limits<int>::max());
+    dist[start] = 0;
+
+    std::priority_queue<Dist, std::vector<Dist>, Compare> queue;
+
+    std::vector<bool> true_dist;
+    true_dist.resize(n, false);
+
+    std::deque<int64_t> deque;
+    deque.push_back(start);
+
+    while (!deque.empty()) {
+      int64_t v = deque.front();
+      deque.pop_front();
+      bool used = false;
+      if (true_dist[v]) {
+        used = true;
+      }
+      true_dist[v] = true;
+      if (!used) {
+        for (size_t i = 0; i < adjacency_list[v].size(); ++i) {
+          if (dist[v] + adjacency_list[v][i].weight < dist[adjacency_list[v][i].vert]) {
+            if (!true_dist[adjacency_list[v][i].vert]) {
+              dist[adjacency_list[v][i].vert] = dist[v] + adjacency_list[v][i].weight;
+              Dist push_pair{dist[adjacency_list[v][i].vert], adjacency_list[v][i].vert};
+              queue.push(push_pair);
+            }
+          }
+        }
+      }
+
+      if (!queue.empty()) {
+        deque.push_back(queue.top().v);
+        queue.pop();
+      }
+    }
+
+    for (int i = 0; i < n; ++i) {
+      if (dist[i] != std::numeric_limits<int>::max()) {
+        dist[i] += potential[i] - potential[start];
+      }
+    }
+
+    return dist;
+  }
+
+  void Jonson() {
+    FordBellman();
+
+    adjacency_list.pop_back();
+
+    for (int i = 0; i < n; ++i) {
+      for (size_t j = 0; j < adjacency_list[i].size(); ++j) {
+        adjacency_list[i][j].weight += potential[i] - potential[adjacency_list[i][j].vert];
+      }
+    }
+
+    for (int i = 0; i < n; ++i) {
+      matrix.push_back(Dijkstra(i));
+    }
+  }
+
+  void Print() {
+    int64_t max = std::numeric_limits<int>::min();
+    for (int i = 0; i < n; ++i) {
+      for (int j = 0; j < n; ++j) {
+        if (matrix[i][j] > max && matrix[i][j] != std::numeric_limits<int>::max()) {
+          max = matrix[i][j];
+        }
+      }
+    }
+    std::cout << max;
+  }
+};
+
+int main() {
+  std::ios_base::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  Graph graph;
+
+  std::cin >> graph.n >> graph.m;
+
+  graph.adjacency_list.reserve(graph.n + 1);
+  graph.matrix.reserve(graph.n);
+  graph.potential.resize(graph.n + 1, std::numeric_limits<int>::max());
+  graph.potential[graph.n] = 0;
+
+  for (int i = 0; i < graph.n + 1; ++i) {
+    std::vector<Pair> push_vector;
+    graph.adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < graph.m; ++i) {
+    int vert1 = 0;
+    int vert2 = 0;
+    int weight = 0;
+    std::cin >> vert1 >> vert2 >> weight;
+    Pair pair1{vert2, weight};
+    graph.adjacency_list[vert1].push_back(pair1);
+  }
+
+  for (int i = 0; i < graph.n; ++i) {
+    int vert1 = graph.n;
+    int vert2 = i;
+    int weight = 0;
+    Pair pair1{vert2, weight};
+    graph.adjacency_list[vert1].push_back(pair1);
+  }
+
+  graph.Jonson();
+  graph.Print();
+}

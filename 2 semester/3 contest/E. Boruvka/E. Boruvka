@@ -1,0 +1,95 @@
+#include <iostream>
+#include <vector>
+
+class Graph {
+ public:
+  int n, m;
+  std::vector<int> parent;
+  std::vector<int> rank;
+  int64_t sum = 0;
+
+  int FindSet(int x) {
+    if (parent[x] == -1) {
+      return -1;
+    }
+
+    while (x != parent[x]) {
+      x = parent[x];
+    }
+
+    return x;
+  }
+
+  void Union(int first, int second) {
+    if (rank[first] >= rank[second]) {
+      parent[second] = first;
+      if (rank[second] == rank[first]) {
+        ++rank[first];
+      }
+      rank[second] = -1;
+    } else {
+      parent[first] = second;
+      if (rank[first] == rank[second]) {
+        ++rank[second];
+      }
+      rank[first] = -1;
+    }
+  }
+
+  void MakeSet(int v1, int v2) {
+    parent[v1] = v1;
+    parent[v2] = v1;
+    rank[v1] = 1;
+  }
+
+  void Boruvka(int v1, int v2, int w) {
+    int first = FindSet(v1);
+    int second = FindSet(v2);
+
+    if (first == -1 && second == -1) {
+      MakeSet(v1, v2);
+      sum += w;
+    }
+
+    if (first != -1 && second != -1) {
+      if (first != second) {
+        Union(first, second);
+        sum += w;
+      }
+    }
+
+    if (first != -1 && second == -1) {
+      parent[v2] = first;
+      sum += w;
+    }
+
+    if (first == -1 && second != -1) {
+      parent[v1] = second;
+      sum += w;
+    }
+  }
+};
+
+int main() {
+  std::ios_base::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  Graph graph;
+
+  std::cin >> graph.n >> graph.m;
+
+  graph.parent.resize(graph.n, -1);
+  graph.rank.resize(graph.n, -1);
+
+  for (int i = 0; i < graph.m; ++i) {
+    int vert1 = 0;
+    int vert2 = 0;
+    int weight = 0;
+    std::cin >> vert1 >> vert2 >> weight;
+    --vert1;
+    --vert2;
+    graph.Boruvka(vert1, vert2, weight);
+  }
+
+  std::cout << graph.sum;
+}

@@ -1,0 +1,107 @@
+#include <iostream>
+#include <vector>
+#include <limits>
+#include <queue>
+
+struct Pair {
+  int vert;
+  int weight;
+};
+
+struct Dist {
+  int dist;
+  int v;
+};
+
+class Compare {
+ public:
+  bool operator()(const Dist& lhs, const Dist& rhs) {
+    return lhs.dist > rhs.dist;
+  }
+};
+
+std::vector<int> Dijkstra(const std::vector<std::vector<Pair>>& adjacency_list, int start) {
+  size_t n = adjacency_list.size();
+  std::vector<int> dist;
+  dist.resize(n, 2009000999);
+  dist[start] = 0;
+
+  std::priority_queue<Dist, std::vector<Dist>, Compare> queue;
+
+  std::vector<bool> true_dist;
+  true_dist.resize(n, false);
+
+  std::deque<int> deque;
+  deque.push_back(start);
+
+  while (!deque.empty()) {
+    int v = deque.front();
+    deque.pop_front();
+    bool used = false;
+    if (true_dist[v]) {
+      used = true;
+    }
+    true_dist[v] = true;
+    if (!used) {
+      for (size_t i = 0; i < adjacency_list[v].size(); ++i) {
+        if (dist[v] + adjacency_list[v][i].weight < dist[adjacency_list[v][i].vert]) {
+          if (!true_dist[adjacency_list[v][i].vert]) {
+            dist[adjacency_list[v][i].vert] = dist[v] + adjacency_list[v][i].weight;
+            Dist push_pair{dist[adjacency_list[v][i].vert], adjacency_list[v][i].vert};
+            queue.push(push_pair);
+          }
+        }
+      }
+    }
+
+    if (!queue.empty()) {
+      deque.push_back(queue.top().v);
+      queue.pop();
+    }
+  }
+
+  return dist;
+}
+
+int main() {
+  std::ios_base::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  int k = 0;
+  std::cin >> k;
+
+  for (int i = 0; i < k; ++i) {
+    int n = 0;
+    int m = 0;
+    std::cin >> n >> m;
+
+    std::vector<std::vector<Pair>> adjacency_list;
+
+    for (int j = 0; j < n; ++j) {
+      std::vector<Pair> push_vector;
+      adjacency_list.push_back(push_vector);
+    }
+
+    for (int j = 0; j < m; ++j) {
+      int first = 0;
+      int second = 0;
+      int w = 0;
+      std::cin >> first >> second >> w;
+      Pair pair1{second, w};
+      Pair pair2{first, w};
+      adjacency_list[first].push_back(pair1);
+      adjacency_list[second].push_back(pair2);
+    }
+
+    int start = 0;
+    std::cin >> start;
+
+    std::vector<int> dist;
+    dist = Dijkstra(adjacency_list, start);
+
+    for (int j = 0; j < n; ++j) {
+      std::cout << dist[j] << " ";
+    }
+    std::cout << "\n";
+  }
+}

@@ -1,0 +1,67 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <limits>
+
+struct Pair {
+  int vert;
+  int weight;
+};
+
+class Graph {
+ public:
+  int n, m;
+
+  std::vector<std::vector<Pair>> adjacency_list;
+  std::vector<int> dist;
+
+  void Relax() {
+    for (int i = 0; i < n; ++i) {
+      for (size_t j = 0; j < adjacency_list[i].size(); ++j) {
+        if (dist[adjacency_list[i][j].vert] > dist[i] + adjacency_list[i][j].weight) {
+          if (dist[i] != 30000 || dist[adjacency_list[i][j].vert] != 30000) {
+            dist[adjacency_list[i][j].vert] = dist[i] + adjacency_list[i][j].weight;
+          }
+        }
+      }
+    }
+  }
+};
+
+int main() {
+  std::ios_base::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  Graph graph;
+
+  std::cin >> graph.n >> graph.m;
+
+  graph.adjacency_list.reserve(graph.n);
+  graph.dist.resize(graph.n, 30000);
+  graph.dist[0] = 0;
+
+  for (int i = 0; i < graph.n; ++i) {
+    std::vector<Pair> push_vector;
+    graph.adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < graph.m; ++i) {
+    int vert1 = 0;
+    int vert2 = 0;
+    int weight = 0;
+    std::cin >> vert1 >> vert2 >> weight;
+    --vert1;
+    --vert2;
+    Pair pair1{vert2, weight};
+
+    graph.adjacency_list[vert1].push_back(pair1);
+  }
+
+  for (int i = 0; i < graph.n - 1; ++i) {
+    graph.Relax();
+  }
+
+  for (int i = 0; i < graph.n; ++i) {
+    std::cout << graph.dist[i] << " ";
+  }
+}

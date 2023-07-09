@@ -1,0 +1,68 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <limits>
+#include <iterator>
+#include <algorithm>
+
+struct Pair {
+  int vert;
+  int weight;
+};
+
+class Graph {
+ public:
+  int n;
+
+  std::vector<std::vector<int>> dist_old;
+  std::vector<std::vector<int>> dist_new;
+
+  void FloydWarshall() {
+    for (int k = 0; k < n; ++k) {
+      std::swap(dist_old, dist_new);
+      for (int x = 0; x < n; ++x) {
+        for (int y = 0; y < n; ++y) {
+          dist_new[x][y] = std::min(dist_old[x][y], dist_old[x][k] + dist_old[k][y]);
+        }
+      }
+    }
+  }
+
+  void Print() {
+    for (int i = 0; i < n; ++i) {
+      for (int j = 0; j < n; ++j) {
+        std::cout << dist_new[i][j] << " ";
+      }
+      std::cout << "\n";
+    }
+  }
+};
+
+int main() {
+  std::ios_base::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  Graph graph;
+
+  std::cin >> graph.n;
+
+  graph.dist_old.reserve(graph.n);
+  graph.dist_new.reserve(graph.n);
+  for (int j = 0; j < graph.n; ++j) {
+    std::vector<int> push_vector(graph.n);
+    graph.dist_old.push_back(push_vector);
+    graph.dist_new.push_back(push_vector);
+  }
+
+  for (int i = 0; i < graph.n; ++i) {
+    for (int j = 0; j < graph.n; ++j) {
+      int weight = 0;
+      std::cin >> weight;
+      graph.dist_old[i][j] = weight;
+      graph.dist_new[i][j] = weight;
+    }
+  }
+
+  graph.FloydWarshall();
+  graph.Print();
+}
