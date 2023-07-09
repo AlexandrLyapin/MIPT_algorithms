@@ -1,0 +1,25 @@
+#include <iostream>
+
+void Countingmethods(int64_t* dp, int64_t* a, int n) {
+  a[0] = 0;
+  a[1] = 1;
+  a[2] = 2;
+  dp[0] = 0;
+  dp[1] = 3;
+  dp[2] = 8;
+  for (int i = 3; i <= n; ++i) {
+    a[i] = (a[i - 1] + a[i - 2]) * 2;
+    dp[i] = (dp[i - 1] * 3) - a[i - 1];
+  }
+  std::cout << dp[n];
+}
+
+int main() {
+  int n;
+  std::cin >> n;
+  auto a = new int64_t[30];
+  auto dp = new int64_t[30];
+  Countingmethods(dp, a, n);
+  delete[] dp;
+  delete[] a;
+}

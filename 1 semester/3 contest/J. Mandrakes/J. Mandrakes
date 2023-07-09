@@ -1,0 +1,29 @@
+#include <iostream>
+#include <algorithm>
+
+int64_t SumLen(int64_t* numbers, int n, int64_t* dp) {
+  if (n == 2) {
+    return numbers[1] - numbers[0];
+  }
+  dp[1] = numbers[1] - numbers[0];
+  dp[2] = numbers[2] - numbers[0];
+  for (int i = 3; i < n; ++i) {
+    dp[i] = std::min(dp[i - 1], dp[i - 2]) + numbers[i] - numbers[i - 1];
+  }
+  return dp[n - 1];
+}
+
+int main() {
+  int n;
+  std::cin >> n;
+  auto numbers = new int64_t[n];
+  for (int i = 0; i < n; ++i) {
+    std::cin >> numbers[i];
+  }
+  std::sort(numbers, numbers + n);
+  auto dp = new int64_t[n + 3];
+  int64_t min = SumLen(numbers, n, dp);
+  std::cout << min;
+  delete[] numbers;
+  delete[] dp;
+}

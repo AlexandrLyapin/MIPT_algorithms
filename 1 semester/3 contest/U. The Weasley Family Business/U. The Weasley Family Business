@@ -1,0 +1,51 @@
+#include <iostream>
+#include <algorithm>
+
+int Func(int** dp, int n, int m) {
+  for (int temp = 0; temp < (1 << m); ++temp) {
+    dp[0][temp] = 1;
+  }
+  for (int i = 1; i < n; ++i) {
+    for (int temp1 = 0; temp1 < (1 << m); ++temp1) {
+      dp[i][temp1] = 0;
+      for (int temp2 = 0; temp2 < (1 << m); ++temp2) {
+        bool check = true;
+        for (int j = 1; j < m; ++j) {
+          if ((temp1 & (1 << j)) && (temp1 & (1 << (j - 1))) && (temp2 & (1 << j)) && (temp2 & (1 << (j - 1)))) {
+            check = false;
+          }
+          if (!(temp1 & (1 << j)) && !(temp1 & (1 << (j - 1))) && !(temp2 & (1 << j)) && !(temp2 & (1 << (j - 1)))) {
+            check = false;
+          }
+        }
+        if (check) {
+          dp[i][temp1] += dp[i - 1][temp2];
+        }
+      }
+    }
+  }
+  int answer = 0;
+  for (int temp = 0; temp < (1 << m); ++temp) {
+    answer += dp[n - 1][temp];
+  }
+  std::cout << answer;
+}
+
+int main() {
+  int n;
+  int m;
+  std::cin >> n >> m;
+  if (m > n) {
+    std::swap(n, m);
+  }
+  auto dp = new int*[n];
+  for (int i = 0; i < n; ++i) {
+    dp[i] = new int[1 << m];
+  }
+  int answer = Func(dp, n, m);
+  std::cout << answer;
+  for (int i = 0; i < n; ++i) {
+    delete[] dp[i];
+  }
+  delete[] dp;
+}

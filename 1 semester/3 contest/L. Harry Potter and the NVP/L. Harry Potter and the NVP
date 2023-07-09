@@ -1,0 +1,47 @@
+#include <iostream>
+#include <climits>
+
+void NVP(int* dp, int* prev, int* sequence, int n) {
+  int maxi = std::numeric_limits<int>::min();
+  int max = std::numeric_limits<int>::min();
+  for (int i = 0; i < n; ++i) {
+    dp[i] = 1;
+    prev[i] = -1;
+    for (int j = 0; j < i; j++) {
+      if (sequence[i] > sequence[j] && dp[i] < dp[j] + 1) {
+        dp[i] = dp[j] + 1;
+        prev[i] = j;
+      }
+    }
+    if (dp[i] > max) {
+      maxi = i;
+      max = dp[i];
+    }
+  }
+  int i = maxi;
+  auto result = new int[dp[maxi]];
+  while (max > 0) {
+    result[max - 1] = sequence[i];
+    i = prev[i];
+    max--;
+  }
+  for (int j = 0; j < dp[maxi]; ++j) {
+    std::cout << result[j] << " ";
+  }
+  delete[] result;
+}
+
+int main() {
+  int n;
+  std::cin >> n;
+  auto sequence = new int[n];
+  for (int i = 0; i < n; ++i) {
+    std::cin >> sequence[i];
+  }
+  auto dp = new int[n];
+  auto prev = new int[n];
+  NVP(dp, prev, sequence, n);
+  delete[] dp;
+  delete[] prev;
+  delete[] sequence;
+}

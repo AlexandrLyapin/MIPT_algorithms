@@ -1,0 +1,52 @@
+#include <iostream>
+
+void Coordinates(int** audiences, int n, int m, int w, int h) {
+  int second_x = 1 - w;
+  int second_y = 1 - h;
+  int x = 0;
+  int y = 0;
+  while (second_y != y || second_x != x) {
+    int max_y = y;
+    int max_x = x;
+    for (int temp2 = x; temp2 < std::min(n, x + w); ++temp2) {
+      int temp1;
+      if (temp2 >= second_x + w) {
+        temp1 = y;
+      } else {
+        temp1 = second_y + h;
+      }
+      for (; temp1 < std::min(y + h, m); ++temp1) {
+        if (audiences[max_x][max_y] < audiences[temp2][temp1]) {
+          max_x = temp2;
+          max_y = temp1;
+        }
+      }
+    }
+    second_x = x;
+    second_y = y;
+    x = max_x;
+    y = max_y;
+  }
+  std::cout << x << " " << y;
+}
+
+int main() {
+  int n, m;
+  std::cin >> n >> m;
+  int w, h;
+  std::cin >> w >> h;
+  auto audiences = new int*[n];
+  for (int i = 0; i < n; ++i) {
+    audiences[i] = new int[m];
+  }
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      std::cin >> audiences[i][j];
+    }
+  }
+  Coordinates(audiences, n, m, w, h);
+  for (int i = 0; i < n; ++i) {
+    delete[] audiences[i];
+  }
+  delete[] audiences;
+}

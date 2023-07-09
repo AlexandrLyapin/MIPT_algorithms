@@ -1,0 +1,28 @@
+#include <iostream>
+
+void NVP(int* dp, int* sequence, int n) {
+  int sum = 0;
+  for (int i = 0; i < n; ++i) {
+    dp[i] = 1;
+    for (int j = 0; j < i; j++) {
+      if (sequence[i] > sequence[j]) {
+        dp[i] = (dp[i] + dp[j]) % 1000000;
+      }
+    }
+    sum = (sum + dp[i]) % 1000000;
+  }
+  std::cout << sum;
+}
+
+int main() {
+  int n;
+  std::cin >> n;
+  auto sequence = new int[n];
+  for (int i = 0; i < n; ++i) {
+    std::cin >> sequence[i];
+  }
+  auto dp = new int[n];
+  NVP(dp, sequence, n);
+  delete[] dp;
+  delete[] sequence;
+}

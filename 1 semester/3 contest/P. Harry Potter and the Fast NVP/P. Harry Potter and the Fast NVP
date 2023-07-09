@@ -1,0 +1,56 @@
+#include <iostream>
+#include <climits>
+
+int BinSearch(int* begin, int* end, int key) {
+  int size = end - begin + 1;
+  int left = 0;
+  int right = size - 1;
+  int mid = (left + right) / 2;
+  while (right - left > 1) {
+    if (key > begin[mid]) {
+      left = mid;
+    } else {
+      right = mid;
+    }
+    mid = (left + right) / 2;
+  }
+  return right;
+}
+
+void NVP(int* dp, int* sequence, int n) {
+  dp[1] = sequence[0];
+  if (n > 1) {
+    for (int i = 2; i <= n; ++i) {
+      int j = BinSearch(dp, dp + n, sequence[i - 1]);
+      if (dp[j] < sequence[i - 1]) {
+        dp[j + 1] = sequence[i - 1];
+      } else {
+        dp[j] = sequence[i - 1];
+      }
+    }
+  }
+  int sum = 0;
+  for (int j = 1; j <= n; ++j) {
+    if (dp[j] != std::numeric_limits<int>::max()) {
+      sum++;
+    }
+  }
+  std::cout << sum;
+}
+
+int main() {
+  int n;
+  std::cin >> n;
+  auto sequence = new int[n];
+  for (int i = 0; i < n; ++i) {
+    std::cin >> sequence[i];
+  }
+  auto dp = new int[n + 1];
+  dp[0] = std::numeric_limits<int>::min();
+  for (int i = 1; i <= n; ++i) {
+    dp[i] = std::numeric_limits<int>::max();
+  }
+  NVP(dp, sequence, n);
+  delete[] dp;
+  delete[] sequence;
+}
