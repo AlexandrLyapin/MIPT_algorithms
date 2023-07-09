@@ -1,0 +1,130 @@
+#include <iostream>
+#include <vector>
+#include <deque>
+
+struct Component {
+  int number;
+  std::vector<int> peaks;
+};
+
+void DFS(const std::vector<std::vector<int>>& adjacency_list, std::vector<int>& color, int vert,
+         std::deque<int>& top_sorted) {
+  color[vert] = 1;
+
+  for (size_t i = 0; i < adjacency_list[vert].size(); ++i) {
+    if (color[adjacency_list[vert][i]] == 0) {
+      DFS(adjacency_list, color, adjacency_list[vert][i], top_sorted);
+    }
+  }
+
+  color[vert] = 2;
+  top_sorted.push_front(vert);
+}
+
+void DFS(const std::vector<std::vector<int>>& adjacency_list, std::vector<bool>& used, int vert,
+         std::vector<Component>& condensation) {
+  used[vert] = true;
+  condensation[condensation.size() - 1].peaks.push_back(vert);
+
+  for (size_t i = 0; i < adjacency_list[vert].size(); ++i) {
+    if (!used[adjacency_list[vert][i]]) {
+      DFS(adjacency_list, used, adjacency_list[vert][i], condensation);
+    }
+  }
+}
+
+void TopSort(const std::vector<std::vector<int>>& adjacency_list, std::deque<int>& top_sorted) {
+  size_t n = adjacency_list.size();
+  std::vector<int> color;
+  for (size_t i = 0; i < n; ++i) {
+    color.push_back(0);
+  }
+
+  for (size_t i = 0; i < n; ++i) {
+    color[i] = 0;
+  }
+
+  for (size_t i = 0; i < n; ++i) {
+    if (color[i] == 0) {
+      DFS(adjacency_list, color, i, top_sorted);
+    }
+  }
+}
+
+void Transposition(std::vector<std::vector<int>>& adjacency_list) {
+  std::vector<std::vector<int>> adjacency_list_transposed;
+
+  for (size_t i = 0; i < adjacency_list.size(); ++i) {
+    std::vector<int> push_vector;
+    adjacency_list_transposed.push_back(push_vector);
+  }
+
+  for (size_t i = 0; i < adjacency_list.size(); ++i) {
+    for (size_t j = 0; j < adjacency_list[i].size(); ++j) {
+      adjacency_list_transposed[adjacency_list[i][j]].push_back(i);
+    }
+  }
+
+  adjacency_list = adjacency_list_transposed;
+}
+
+void StrongConnectedComponents(const std::vector<std::vector<int>>& adjacency_list, const std::deque<int>& top_sorted) {
+  std::vector<bool> used;
+  for (size_t i = 0; i < adjacency_list.size(); ++i) {
+    used.push_back(false);
+  }
+
+  std::vector<Component> condensation;
+
+  for (size_t i = 0; i < top_sorted.size(); ++i) {
+    if (!used[top_sorted[i]]) {
+      std::vector<int> peaks;
+      Component component{static_cast<int>(condensation.size()), peaks};
+      condensation.push_back(component);
+      DFS(adjacency_list, used, top_sorted[i], condensation);
+    }
+  }
+
+  std::vector<int> part_number;
+  for (size_t i = 0; i < adjacency_list.size(); ++i) {
+    part_number.push_back(0);
+  }
+
+  std::cout << condensation.size() << "\n";
+  for (size_t i = 0; i < condensation.size(); ++i) {
+    for (size_t j = 0; j < condensation[i].peaks.size(); ++j) {
+      part_number[condensation[i].peaks[j]] = condensation[i].number;
+    }
+  }
+
+  for (size_t i = 0; i < part_number.size(); ++i) {
+    std::cout << part_number[i] + 1 << " ";
+  }
+}
+
+int main() {
+  int n, m;
+  std::cin >> n >> m;
+
+  std::vector<std::vector<int>> adjacency_list;
+
+  for (int i = 0; i < n; ++i) {
+    std::vector<int> push_vector;
+    adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < m; ++i) {
+    int first, second;
+    std::cin >> first >> second;
+    first--;
+    second--;
+    adjacency_list[first].push_back(second);
+  }
+
+  std::deque<int> top_sorted;
+  TopSort(adjacency_list, top_sorted);
+
+  Transposition(adjacency_list);
+
+  StrongConnectedComponents(adjacency_list, top_sorted);
+}

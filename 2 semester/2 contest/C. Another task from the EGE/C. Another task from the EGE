@@ -1,0 +1,143 @@
+#include <iostream>
+#include <algorithm>
+#include <queue>
+#include <limits>
+#include <vector>
+
+struct Edge {
+  int start;
+  int stop;
+};
+
+int AddOne(int n) {
+  if (n / 1000 != 9) {
+    return n + 1000;
+  }
+  return n;
+}
+
+int MinusOne(int n) {
+  if (n % 10 != 1) {
+    return n - 1;
+  }
+  return n;
+}
+
+int ShiftRight(int n) {
+  int plusthousand = n % 10;
+  n /= 10;
+  n += plusthousand * 1000;
+
+  return n;
+}
+
+int ShiftLeft(int n) {
+  return (n % 1000) * 10 + n / 1000;
+}
+
+void BFS(int a, int b) {
+  auto prev = new int[10000];
+  auto dist = new int[10000];
+  auto used = new bool[10000];
+
+  for (int i = 0; i < 10000; ++i) {
+    dist[i] = -1;
+  }
+  for (int i = 0; i < 10000; ++i) {
+    used[i] = false;
+  }
+  std::queue<int> converted_numbers;
+  converted_numbers.push(AddOne(a));
+  converted_numbers.push(MinusOne(a));
+  converted_numbers.push(ShiftRight(a));
+  converted_numbers.push(ShiftLeft(a));
+
+  used[AddOne(a)] = true;
+  used[MinusOne(a)] = true;
+  used[ShiftRight(a)] = true;
+  used[ShiftLeft(a)] = true;
+
+  prev[AddOne(a)] = a;
+  prev[MinusOne(a)] = a;
+  prev[ShiftRight(a)] = a;
+  prev[ShiftLeft(a)] = a;
+
+  dist[AddOne(a)] = 1;
+  dist[MinusOne(a)] = 1;
+  dist[ShiftRight(a)] = 1;
+  dist[ShiftLeft(a)] = 1;
+
+  bool found = false;
+
+  while (!found) {
+    int number = converted_numbers.front();
+    converted_numbers.pop();
+
+    if (number == b) {
+      found = true;
+    } else {
+      if (!used[AddOne(number)]) {
+        converted_numbers.push(AddOne(number));
+        used[AddOne(number)] = true;
+      }
+      if (!used[MinusOne(number)]) {
+        converted_numbers.push(MinusOne(number));
+        used[MinusOne(number)] = true;
+      }
+      if (!used[ShiftRight(number)]) {
+        converted_numbers.push(ShiftRight(number));
+        used[ShiftRight(number)] = true;
+      }
+      if (!used[ShiftLeft(number)]) {
+        converted_numbers.push(ShiftLeft(number));
+        used[ShiftLeft(number)] = true;
+      }
+
+      if (dist[AddOne(number)] == -1 || dist[AddOne(number)] > dist[number] + 1) {
+        prev[AddOne(number)] = number;
+        dist[AddOne(number)] = dist[number] + 1;
+      }
+
+      if (dist[MinusOne(number)] == -1 || dist[MinusOne(number)] > dist[number] + 1) {
+        prev[MinusOne(number)] = number;
+        dist[MinusOne(number)] = dist[number] + 1;
+      }
+
+      if (dist[ShiftRight(number)] == -1 || dist[ShiftRight(number)] > dist[number] + 1) {
+        prev[ShiftRight(number)] = number;
+        dist[ShiftRight(number)] = dist[number] + 1;
+      }
+
+      if (dist[ShiftLeft(number)] == -1 || dist[ShiftLeft(number)] > dist[number] + 1) {
+        prev[ShiftLeft(number)] = number;
+        dist[ShiftLeft(number)] = dist[number] + 1;
+      }
+    }
+  }
+  std::cout << dist[b] + 1 << "\n";
+  auto path = new int[dist[b] + 1];
+  path[dist[b]] = a;
+  path[0] = b;
+  int j = b;
+  for (int i = 1; i < dist[b]; ++i) {
+    path[i] = prev[j];
+    j = prev[j];
+  }
+  for (int i = dist[b]; i >= 0; --i) {
+    std::cout << path[i] << "\n";
+  }
+  delete[] path;
+  delete[] prev;
+  delete[] dist;
+  delete[] used;
+}
+
+int main() {
+  int a, b;
+  std::cin >> a >> b;
+  if (a == b) {
+    std::cout << 0;
+  } else {
+    BFS(a, b);
+  }
+}

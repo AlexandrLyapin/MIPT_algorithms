@@ -1,0 +1,84 @@
+#include <iostream>
+#include <algorithm>
+#include <limits>
+#include <vector>
+
+struct Edge {
+  int start;
+  int stop;
+};
+
+bool BadNeighbours(const std::vector<int>& neighbours, std::vector<int>& color, int checkcolor) {
+  for (size_t i = 0; i < neighbours.size(); ++i) {
+    if (color[neighbours[i]] == checkcolor) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool DFS(const std::vector<std::vector<int>>& adjacency_list, int n, std::vector<int>& color, int v, int par) {
+  if (par == -1) {
+    color[v] = 0;
+  } else {
+    if (color[par] == 0) {
+      color[v] = 1;
+    } else {
+      color[v] = 0;
+    }
+  }
+  for (size_t i = 0; i < adjacency_list[v].size(); ++i) {
+    if (BadNeighbours(adjacency_list[v], color, color[v])) {
+      return false;
+    }
+    if (color[adjacency_list[v][i]] == -1 && adjacency_list[v][i] != par) {
+      if (!DFS(adjacency_list, n, color, adjacency_list[v][i], v)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+bool TwoColors(const std::vector<std::vector<int>>& adjacency_list, int n) {
+  std::vector<int> color;
+  for (int i = 0; i < n; ++i) {
+    color.push_back(-1);
+  }
+
+  for (int i = 0; i < n; ++i) {
+    if (color[i] == -1) {
+      if (!DFS(adjacency_list, n, color, i, -1)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+int main() {
+  int n, m;
+  std::cin >> n >> m;
+
+  std::vector<std::vector<int>> adjacency_list;
+
+  for (int i = 0; i < n; ++i) {
+    std::vector<int> push_vector;
+    adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < m; ++i) {
+    int first, second;
+    std::cin >> first >> second;
+    first--;
+    second--;
+    adjacency_list[first].push_back(second);
+    adjacency_list[second].push_back(first);
+  }
+  if (TwoColors(adjacency_list, n)) {
+    std::cout << "YES";
+  } else {
+    std::cout << "NO";
+  }
+}

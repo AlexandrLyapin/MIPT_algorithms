@@ -1,0 +1,87 @@
+#include <iostream>
+#include <vector>
+
+void DFS(const std::vector<std::vector<int>>& adjacency_list, std::vector<int>& color, int vert) {
+  color[vert] = 1;
+
+  for (size_t i = 0; i < adjacency_list[vert].size(); ++i) {
+    if (color[adjacency_list[vert][i]] == 0) {
+      DFS(adjacency_list, color, adjacency_list[vert][i]);
+    }
+  }
+
+  color[vert] = 2;
+}
+
+void DFS(const std::vector<std::vector<int>>& adjacency_list, std::vector<int>& color, int vert,
+         std::vector<int>& connected_people) {
+  color[vert] = 1;
+  connected_people.push_back(vert + 1);
+
+  for (size_t i = 0; i < adjacency_list[vert].size(); ++i) {
+    if (color[adjacency_list[vert][i]] == 0) {
+      DFS(adjacency_list, color, adjacency_list[vert][i], connected_people);
+    }
+  }
+  color[vert] = 2;
+}
+
+void ConnectedComponents(const std::vector<std::vector<int>>& adjacency_list) {
+  size_t n = adjacency_list.size();
+  std::vector<int> color;
+  for (size_t i = 0; i < n; ++i) {
+    color.push_back(0);
+  }
+
+  std::vector<int> connected_people;
+
+  int answer = 0;
+
+  for (size_t i = 0; i < n; ++i) {
+    if (color[i] == 0) {
+      DFS(adjacency_list, color, i);
+      answer++;
+    }
+  }
+
+  for (size_t i = 0; i < n; ++i) {
+    color[i] = 0;
+  }
+
+  std::cout << answer << "\n";
+
+  for (size_t i = 0; i < n; ++i) {
+    if (color[i] == 0) {
+      DFS(adjacency_list, color, i, connected_people);
+      std::cout << connected_people.size() << "\n";
+      for (size_t i = 0; i < connected_people.size(); ++i) {
+        std::cout << connected_people[i] << " ";
+      }
+      std::cout << "\n";
+      connected_people.clear();
+    }
+  }
+}
+
+int main() {
+  int n, m;
+  std::cin >> n >> m;
+
+  std::vector<std::vector<int>> adjacency_list;
+
+  for (int i = 0; i < n; ++i) {
+    std::vector<int> push_vector;
+    adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < m; ++i) {
+    int first, second;
+    std::cin >> first >> second;
+    first--;
+    second--;
+    adjacency_list[first].push_back(second);
+    adjacency_list[second].push_back(first);
+  }
+
+  ConnectedComponents(adjacency_list);
+}

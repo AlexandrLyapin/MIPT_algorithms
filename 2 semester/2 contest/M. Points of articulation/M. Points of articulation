@@ -1,0 +1,123 @@
+#include <iostream>
+#include <vector>
+#include <deque>
+#include <algorithm>
+#include <limits>
+
+void DFS(const std::vector<std::vector<int>>& adjacency_list, std::vector<int>& color, int vert, int par,
+         std::vector<bool>& used, std::vector<int>& points, std::vector<int>& time_in, std::vector<int>& time_up,
+         int& time, int start, int& root_neighbours) {
+  color[vert] = 1;
+  if (time_in[vert] == std::numeric_limits<int>::max()) {
+    time_in[vert] = 0;
+    time_up[vert] = 0;
+  }
+  time++;
+
+  if (adjacency_list[vert].empty() && par != -1) {
+    time_up[vert] = std::min(time_up[vert], time_in[vert]);
+    if (time_up[vert] < time_up[par]) {
+      time_up[par] = time_up[vert];
+    }
+  }
+
+  for (size_t i = 0; i < adjacency_list[vert].size(); ++i) {
+
+    if (color[adjacency_list[vert][i]] == 1 && adjacency_list[vert][i] != par) {
+      int min = std::min(time_in[vert], time_in[adjacency_list[vert][i]]);
+      time_up[vert] = std::min(time_up[vert], min);
+    }
+    if (color[adjacency_list[vert][i]] == 0) {
+      if (par == -1) {
+        root_neighbours++;
+      }
+      time_in[adjacency_list[vert][i]] = time;
+      int min = std::min(time_in[vert], time_in[adjacency_list[vert][i]]);
+      time_up[vert] = std::min(time_up[vert], min);
+      DFS(adjacency_list, color, adjacency_list[vert][i], vert, used, points, time_in, time_up, time, start,
+          root_neighbours);
+    }
+    if (par != -1) {
+      if (time_up[vert] < time_up[par]) {
+        time_up[par] = time_up[vert];
+      }
+    }
+  }
+
+  color[vert] = 2;
+
+  if (par != -1) {
+    if (par != start) {
+      if (time_in[par] <= time_up[vert] && !used[par]) {
+        points.push_back(par);
+        used[par] = true;
+      }
+    } else {
+      if (root_neighbours > 1 && !used[par]) {
+        points.push_back(par);
+        used[par] = true;
+      }
+    }
+  }
+}
+
+void ArticulationPoints(const std::vector<std::vector<int>>& adjacency_list) {
+  size_t n = adjacency_list.size();
+
+  std::vector<int> color;
+  std::vector<bool> used;
+  std::vector<int> points;
+  std::vector<int> time_in;
+  std::vector<int> time_up;
+
+  for (size_t i = 0; i < n; ++i) {
+    time_in.push_back(std::numeric_limits<int>::max());
+    time_up.push_back(std::numeric_limits<int>::max());
+    used.push_back(false);
+    time_in[i] = std::numeric_limits<int>::max();
+    time_up[i] = std::numeric_limits<int>::max();
+    color.push_back(0);
+  }
+
+  int time = 0;
+
+  for (size_t i = 0; i < n; ++i) {
+    int neighbours = 0;
+    if (color[i] == 0) {
+      DFS(adjacency_list, color, static_cast<int>(i), -1, used, points, time_in, time_up, time, i, neighbours);
+    }
+  }
+
+  std::cout << points.size() << "\n";
+
+  std::sort(points.begin(), points.end());
+
+  for (size_t i = 0; i < points.size(); ++i) {
+    std::cout << points[i] + 1 << "\n";
+  }
+}
+
+int main() {
+  int n, m;
+  std::cin >> n >> m;
+
+  std::vector<std::vector<int>> adjacency_list;
+
+  for (int i = 0; i < n; ++i) {
+    std::vector<int> push_vector;
+    adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < m; ++i) {
+    int first, second;
+    std::cin >> first >> second;
+    if (first != second) {
+      first--;
+      second--;
+      adjacency_list[first].push_back(second);
+      adjacency_list[second].push_back(first);
+    }
+  }
+
+  ArticulationPoints(adjacency_list);
+}

@@ -1,0 +1,67 @@
+#include <iostream>
+#include <vector>
+#include <deque>
+
+bool DFS(const std::vector<std::vector<int>>& adjacency_list, std::vector<int>& color, int vert,
+         std::deque<int>& top_sorted) {
+  color[vert] = 1;
+
+  for (size_t i = 0; i < adjacency_list[vert].size(); ++i) {
+    if (color[adjacency_list[vert][i]] == 1) {
+      return true;
+    }
+    if (color[adjacency_list[vert][i]] == 0) {
+      if (DFS(adjacency_list, color, adjacency_list[vert][i], top_sorted)) {
+        return true;
+      }
+    }
+  }
+
+  color[vert] = 2;
+  top_sorted.push_front(vert + 1);
+  return false;
+}
+
+void TopSort(const std::vector<std::vector<int>>& adjacency_list) {
+  size_t n = adjacency_list.size();
+  std::vector<int> color;
+  for (size_t i = 0; i < n; ++i) {
+    color.push_back(0);
+  }
+
+  std::deque<int> top_sorted;
+
+  for (size_t i = 0; i < n; ++i) {
+    if (color[i] == 0) {
+      if (DFS(adjacency_list, color, i, top_sorted)) {
+        std::cout << -1;
+        return;
+      }
+    }
+  }
+  for (size_t i = 0; i < n; ++i) {
+    std::cout << top_sorted[i] << " ";
+  }
+}
+
+int main() {
+  int n, m;
+  std::cin >> n >> m;
+
+  std::vector<std::vector<int>> adjacency_list;
+
+  for (int i = 0; i < n; ++i) {
+    std::vector<int> push_vector;
+    adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < m; ++i) {
+    int first, second;
+    std::cin >> first >> second;
+    first--;
+    second--;
+    adjacency_list[first].push_back(second);
+  }
+
+  TopSort(adjacency_list);
+}

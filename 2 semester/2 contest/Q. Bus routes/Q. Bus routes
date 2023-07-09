@@ -1,0 +1,110 @@
+#include <iostream>
+#include <vector>
+
+void DFS(std::vector<std::vector<int>>& adjacency_list, std::vector<int>& cycle, int vert) {
+
+  for (size_t i = 0; i < adjacency_list[vert].size(); ++i) {
+    int neighbour = adjacency_list[vert][i];
+    std::swap(adjacency_list[vert][i], adjacency_list[vert].back());
+    adjacency_list[vert].pop_back();
+    --i;
+    DFS(adjacency_list, cycle, neighbour);
+  }
+
+  if (adjacency_list[vert].empty()) {
+    cycle.push_back(vert);
+  }
+}
+
+void Route(std::vector<std::vector<int>>& adjacency_list) {
+  size_t n = adjacency_list.size();
+
+  std::vector<int> cycle;
+  cycle.reserve(adjacency_list.size() + 1);
+
+  for (size_t i = 0; i < n; ++i) {
+    if (!adjacency_list[i].empty()) {
+      DFS(adjacency_list, cycle, i);
+      break;
+    }
+  }
+
+  for (size_t i = 0; i < n; ++i) {
+    if (!adjacency_list[i].empty()) {
+      std::cout << 0;
+      return;
+    }
+  }
+
+  if (cycle.empty()) {
+    std::cout << 0;
+  } else {
+    std::cout << cycle.size() << " ";
+    for (size_t i = 0; i < cycle.size(); i++) {
+      std::cout << cycle[i] + 1 << " ";
+    }
+  }
+}
+
+int main() {
+  int n, m;
+  std::cin >> n >> m;
+
+  std::vector<std::vector<int>> adjacency_list;
+  adjacency_list.reserve(m);
+
+  std::vector<int> degree_of_entry;
+  degree_of_entry.resize(m, 0);
+
+  std::vector<int> degree_of_end;
+  degree_of_end.resize(m, 0);
+
+  for (int i = 0; i < m; ++i) {
+    std::vector<int> push_vector;
+    adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < n; ++i) {
+    int size;
+    std::cin >> size;
+
+    int first, second;
+
+    for (int j = 0; j < size + 1; ++j) {
+      if (j == 0) {
+        std::cin >> first;
+        first--;
+      } else {
+        if (j == 1) {
+          std::cin >> second;
+          second--;
+          adjacency_list[first].push_back(second);
+          ++degree_of_entry[first];
+          ++degree_of_end[second];
+        } else {
+          first = second;
+          std::cin >> second;
+          second--;
+          adjacency_list[first].push_back(second);
+          ++degree_of_entry[first];
+          ++degree_of_end[second];
+        }
+      }
+    }
+  }
+
+  bool euler_cycle = true;
+
+  for (int i = 0; i < m; ++i) {
+    if (degree_of_end[i] != degree_of_entry[i]) {
+      euler_cycle = false;
+      break;
+    }
+  }
+
+  if (euler_cycle) {
+    Route(adjacency_list);
+  } else {
+    std::cout << 0;
+  }
+}

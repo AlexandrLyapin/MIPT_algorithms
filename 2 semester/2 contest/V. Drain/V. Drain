@@ -1,0 +1,138 @@
+#include <iostream>
+#include <vector>
+#include <deque>
+
+int BFS(const std::vector<std::vector<int>>& adjacency_list, std::vector<std::vector<int>>& color, size_t i, size_t j) {
+  std::deque<std::pair<int, int>> points;
+  std::pair<int, int> first{static_cast<int>(i), static_cast<int>(j)};
+  points.push_back(first);
+
+  bool defined = false;
+
+  bool drain = false;
+
+  while (!points.empty()) {
+    std::pair<int, int> point{points.front().first, points.front().second};
+    points.pop_front();
+    int num = adjacency_list[point.first][point.second];
+    color[point.first][point.second] = 1;
+
+    int id1 = point.first;
+    int id2 = point.second;
+
+    if (adjacency_list[id1 - 1][id2] > num && adjacency_list[id1][id2 + 1] > num &&
+        adjacency_list[id1 + 1][id2] > num && adjacency_list[id1][id2 - 1] > num) {
+      color[point.first][point.second] = 2;
+      if (!defined) {
+        drain = true;
+        defined = true;
+      }
+    }
+
+    if (adjacency_list[id1 - 1][id2] < num || adjacency_list[id1][id2 + 1] < num ||
+        adjacency_list[id1 + 1][id2] < num || adjacency_list[id1][id2 - 1] < num) {
+      color[point.first][point.second] = 2;
+      if (!defined) {
+        drain = false;
+        defined = true;
+      }
+    }
+
+    if (adjacency_list[id1 - 1][id2] == num && color[id1 - 1][id2] == 0) {
+      std::pair<int, int> push{id1 - 1, id2};
+      points.push_back(push);
+      color[id1 - 1][id2] = 1;
+      if (!defined) {
+        drain = true;
+      }
+    }
+
+    if (adjacency_list[id1][id2 + 1] == num && color[id1][id2 + 1] == 0) {
+      std::pair<int, int> push{id1, id2 + 1};
+      points.push_back(push);
+      color[id1][id2 + 1] = 1;
+      if (!defined) {
+        drain = true;
+      }
+    }
+
+    if (adjacency_list[id1 + 1][id2] == num && color[id1 + 1][id2] == 0) {
+      std::pair<int, int> push{id1 + 1, id2};
+      points.push_back(push);
+      color[id1 + 1][id2] = 1;
+      if (!defined) {
+        drain = true;
+      }
+    }
+
+    if (adjacency_list[id1][id2 - 1] == num && color[id1][id2 - 1] == 0) {
+      std::pair<int, int> push{id1, id2 - 1};
+      points.push_back(push);
+      color[id1][id2 - 1] = 1;
+      if (!defined) {
+        drain = true;
+      }
+    }
+  }
+
+  if (drain) {
+    return 1;
+  }
+
+  return 0;
+}
+
+void Drain(const std::vector<std::vector<int>>& adjacency_list) {
+  size_t n = adjacency_list.size() - 2;
+  size_t m = adjacency_list[0].size() - 2;
+
+  std::vector<std::vector<int>> color;
+  color.reserve(n + 2);
+  for (size_t i = 0; i < n + 2; ++i) {
+    std::vector<int> push_vector;
+    push_vector.resize(m + 2, 2);
+    color.push_back(push_vector);
+  }
+
+  for (size_t i = 1; i <= n; ++i) {
+    for (size_t j = 1; j <= m; ++j) {
+      color[i][j] = 0;
+    }
+  }
+
+  int sum = 0;
+
+  for (size_t i = 1; i <= n; ++i) {
+    for (size_t j = 1; j <= m; ++j) {
+      if (color[i][j] == 0) {
+        sum += BFS(adjacency_list, color, i, j);
+      }
+    }
+  }
+
+  std::cout << sum;
+}
+
+int main() {
+  int n, m;
+  std::cin >> n >> m;
+
+  std::vector<std::vector<int>> adjacency_list;
+  adjacency_list.reserve(n + 2);
+
+  for (int i = 0; i < n + 2; ++i) {
+    std::vector<int> push_vector;
+    push_vector.resize(m + 2, 10001);
+    adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 1; i <= n; ++i) {
+    for (int j = 1; j <= m; ++j) {
+      int num;
+      std::cin >> num;
+      adjacency_list[i][j] = num;
+    }
+  }
+
+  Drain(adjacency_list);
+}

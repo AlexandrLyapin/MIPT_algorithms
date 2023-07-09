@@ -1,0 +1,146 @@
+#include <iostream>
+#include <vector>
+#include <limits>
+#include <queue>
+
+struct Pair {
+  int vert;
+  int weight;
+};
+
+void GraphRecovery(const std::vector<std::vector<Pair>>& erased_graph, std::vector<int>& graph) {
+  if (erased_graph.size() == 1) {
+    graph[0] = 0;
+    return;
+  }
+
+  int start = 0;
+
+  size_t max_n = 0;
+
+  for (size_t i = 0; i < erased_graph.size(); ++i) {
+    if (erased_graph[i].size() > max_n) {
+      max_n = erased_graph[i].size();
+      start = static_cast<int>(i);
+    }
+  }
+
+  int min_v, max_v;
+
+  int min_weight = std::numeric_limits<int>::max();
+  int max_weight = std::numeric_limits<int>::min();
+
+  for (size_t i = 0; i < erased_graph[start].size(); ++i) {
+    if (erased_graph[start][i].weight < min_weight) {
+      min_weight = erased_graph[start][i].weight;
+    }
+    if (erased_graph[start][i].weight > max_weight) {
+      max_weight = erased_graph[start][i].weight;
+    }
+  }
+
+  if (min_weight < static_cast<int>(erased_graph.size())) {
+    min_v = min_weight + 1;
+  } else {
+    min_v = static_cast<int>(erased_graph.size());
+  }
+
+  if (max_weight > static_cast<int>(graph.size() - 1)) {
+    max_v = max_weight - graph.size() + 1;
+  } else {
+    max_v = 0;
+  }
+
+  std::swap(max_v, min_v);
+
+  for (int i = min_v; i < max_v; ++i) {
+
+    std::deque<int> vertices;
+
+    vertices.push_back(start);
+    graph[start] = i;
+
+    std::vector<bool> used_new;
+    used_new.resize(graph.size(), false);
+
+    std::vector<int> added;
+
+    used_new[i] = true;
+
+    bool bad = false;
+
+    while (!vertices.empty() && !bad) {
+      int vert = vertices.front();
+      vertices.pop_front();
+
+      for (size_t j = 0; j < erased_graph[vert].size(); ++j) {
+        int new_v = erased_graph[vert][j].weight - graph[vert];
+        if (new_v < 0 || new_v > static_cast<int>(erased_graph.size()) - 1) {
+          for (size_t k = 0; k < added.size(); ++k) {
+            graph[added[k]] = -1;
+          }
+          bad = true;
+          break;
+        }
+
+        if (graph[erased_graph[vert][j].vert] == -1 && !used_new[new_v]) {
+          graph[erased_graph[vert][j].vert] = new_v;
+          added.push_back(erased_graph[vert][j].vert);
+          vertices.push_back(erased_graph[vert][j].vert);
+          used_new[new_v] = true;
+        } else {
+          if (graph[erased_graph[vert][j].vert] != new_v) {
+            for (size_t k = 0; k < added.size(); ++k) {
+              graph[added[k]] = -1;
+            }
+            bad = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!bad) {
+      return;
+    }
+  }
+}
+
+int main() {
+  std::ios_base::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  int n, m;
+  std::cin >> n >> m;
+
+  std::vector<std::vector<Pair>> erased_graph;
+
+  erased_graph.reserve(n);
+  for (int i = 0; i < n; ++i) {
+    std::vector<Pair> push_vector;
+    erased_graph.push_back(push_vector);
+  }
+
+  for (int i = 0; i < m; ++i) {
+    int first, second, w;
+    std::cin >> first >> second >> w;
+    first--;
+    second--;
+    w -= 2;
+    Pair pair1{second, w};
+    Pair pair2{first, w};
+    erased_graph[first].push_back(pair1);
+    erased_graph[second].push_back(pair2);
+  }
+
+  std::vector<int> graph;
+  graph.resize(n, -1);
+
+  GraphRecovery(erased_graph, graph);
+
+  for (int i = 0; i < n; ++i) {
+    if (graph[i] != -1) {
+      std::cout << graph[i] + 1 << " ";
+    }
+  }
+}

@@ -1,0 +1,53 @@
+#include <iostream>
+#include <vector>
+
+void DFS(const std::vector<std::vector<int>>& adjacency_list, std::vector<int>& color, int vert) {
+  color[vert] = 1;
+
+  for (size_t i = 0; i < adjacency_list[vert].size(); ++i) {
+    if (color[adjacency_list[vert][i]] == 0) {
+      DFS(adjacency_list, color, adjacency_list[vert][i]);
+    }
+  }
+
+  color[vert] = 2;
+}
+
+int ConnectedComponents(const std::vector<std::vector<int>>& adjacency_list) {
+  size_t n = adjacency_list.size();
+  std::vector<int> color;
+  for (size_t i = 0; i < n; ++i) {
+    color.push_back(0);
+  }
+
+  int answer = 0;
+
+  for (size_t i = 0; i < n; ++i) {
+    if (color[i] == 0) {
+      DFS(adjacency_list, color, i);
+      answer++;
+    }
+  }
+  return answer;
+}
+
+int main() {
+  int n;
+  std::cin >> n;
+
+  std::vector<std::vector<int>> adjacency_list;
+
+  for (int i = 0; i < n; ++i) {
+    std::vector<int> push_vector;
+    adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < n; ++i) {
+    int key;
+    std::cin >> key;
+    key--;
+    adjacency_list[key].push_back(i);
+    adjacency_list[i].push_back(key);
+  }
+  std::cout << ConnectedComponents(adjacency_list);
+}

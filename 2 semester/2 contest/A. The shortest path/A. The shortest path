@@ -1,0 +1,93 @@
+#include <iostream>
+#include <algorithm>
+#include <queue>
+#include <limits>
+#include <vector>
+
+class Graph {
+ public:
+  int n, m;
+  std::vector<std::vector<int>> adjacency_list;
+};
+
+struct Edge {
+  int start;
+  int stop;
+};
+
+std::vector<int> BFS(const std::vector<std::vector<int>>& adjacency_list, int n, int a, int b) {
+  std::vector<int> previous(n + 1);
+  previous[0] = -1;
+  previous[a] = -1;
+
+  std::vector<int> dist;
+  dist.resize(n + 1, std::numeric_limits<int>::max());
+  dist[a] = 0;
+
+  std::queue<int> vertices;
+  vertices.push(a);
+
+  while (!vertices.empty()) {
+    int v = vertices.front();
+    vertices.pop();
+    for (size_t i = 0; i < adjacency_list[v - 1].size(); ++i) {
+      if (dist[adjacency_list[v - 1][i]] == std::numeric_limits<int>::max()) {
+        dist[adjacency_list[v - 1][i]] = dist[v] + 1;
+        vertices.push(adjacency_list[v - 1][i]);
+        previous[adjacency_list[v - 1][i]] = v;
+      }
+    }
+  }
+
+  if (dist[b] == std::numeric_limits<int>::max()) {
+    std::vector<int> answer;
+    answer.push_back(-1);
+    return answer;
+  }
+
+  std::cout << dist[b] << "\n";
+
+  std::vector<int> path(dist[b] + 1);
+  path[0] = b;
+  path[dist[b]] = a;
+
+  int j = b;
+
+  for (int i = 1; i < dist[b]; ++i) {
+    path[i] = previous[j];
+    j = previous[j];
+  }
+
+  return path;
+}
+
+int main() {
+  Graph graph;
+
+  std::cin >> graph.n >> graph.m;
+
+  int a, b;
+  std::cin >> a >> b;
+
+  for (int i = 0; i < graph.n; ++i) {
+    std::vector<int> a;
+    graph.adjacency_list.push_back(a);
+  }
+
+  for (int i = 0; i < graph.m; ++i) {
+    int first, second;
+    std::cin >> first >> second;
+    first--;
+    second--;
+    graph.adjacency_list[first].push_back(second + 1);
+    graph.adjacency_list[second].push_back(first + 1);
+  }
+
+  std::vector<int> path;
+
+  path = BFS(graph.adjacency_list, graph.n, a, b);
+
+  for (int i = static_cast<int>(path.size()) - 1; i >= 0; --i) {
+    std::cout << path[i] << " ";
+  }
+}

@@ -1,0 +1,88 @@
+#include <iostream>
+#include <vector>
+
+bool HasCycleDFS(const std::vector<std::vector<int>>& adjacency_list, std::vector<int>& color, std::vector<int>& parent,
+                 int vert, int par, int& last) {
+  color[vert] = 1;
+  parent[vert] = par;
+
+  for (size_t i = 0; i < adjacency_list[vert].size(); ++i) {
+    if (color[adjacency_list[vert][i]] == 1) {
+      last = vert;
+      parent[adjacency_list[vert][i]] = vert;
+      return true;
+    }
+    if (color[adjacency_list[vert][i]] == 0) {
+      if (HasCycleDFS(adjacency_list, color, parent, adjacency_list[vert][i], vert, last)) {
+        return true;
+      }
+    }
+  }
+
+  color[vert] = 2;
+  return false;
+}
+
+void HasCycle(const std::vector<std::vector<int>>& adjacency_list) {
+  size_t n = adjacency_list.size();
+  std::vector<int> color;
+  for (size_t i = 0; i < n; ++i) {
+    color.push_back(0);
+  }
+  std::vector<int> parent;
+  for (size_t i = 0; i < n; ++i) {
+    parent.push_back(-1);
+  }
+
+  bool cycle = false;
+
+  int last_vertex_in_cycle = -1;
+
+  for (size_t i = 0; i < n; ++i) {
+    if (color[i] == 0) {
+      if (HasCycleDFS(adjacency_list, color, parent, i, -1, last_vertex_in_cycle)) {
+        cycle = true;
+        break;
+      }
+    }
+  }
+
+  if (cycle) {
+    std::cout << "YES\n";
+    std::vector<int> cycle_list;
+    cycle_list.push_back(last_vertex_in_cycle);
+    int fix = last_vertex_in_cycle;
+    while (parent[last_vertex_in_cycle] != -1 && parent[last_vertex_in_cycle] != fix) {
+      last_vertex_in_cycle = parent[last_vertex_in_cycle];
+      cycle_list.push_back(last_vertex_in_cycle);
+    }
+
+    for (int i = cycle_list.size() - 1; i >= 0; i--) {
+      std::cout << cycle_list[i] + 1 << " ";
+    }
+  } else {
+    std::cout << "NO";
+  }
+}
+
+int main() {
+  int n, m;
+  std::cin >> n >> m;
+
+  std::vector<std::vector<int>> adjacency_list;
+
+  for (int i = 0; i < n; ++i) {
+    std::vector<int> push_vector;
+    adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < m; ++i) {
+    int first, second;
+    std::cin >> first >> second;
+    first--;
+    second--;
+    adjacency_list[first].push_back(second);
+  }
+
+  HasCycle(adjacency_list);
+}

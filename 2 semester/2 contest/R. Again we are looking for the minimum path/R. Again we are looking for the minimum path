@@ -1,0 +1,80 @@
+#include <iostream>
+#include <vector>
+#include <limits>
+#include <queue>
+
+struct Pair {
+  int vert;
+  int weight;
+};
+
+void Dijkstra(const std::vector<std::vector<Pair>>& adjacency_list, int start, int finish) {
+  size_t n = adjacency_list.size();
+  std::vector<int> dist;
+  for (size_t i = 0; i < n; ++i) {
+    dist.push_back(std::numeric_limits<int>::max());
+  }
+  dist[start] = 0;
+
+  std::vector<int> prev;
+  for (size_t i = 0; i < n; ++i) {
+    prev.push_back(-1);
+  }
+
+  std::deque<int> vert;
+  vert.push_front(start);
+
+  while (!vert.empty()) {
+    int v = vert.front();
+    vert.pop_front();
+    for (size_t i = 0; i < adjacency_list[v].size(); ++i) {
+      if (dist[v] + adjacency_list[v][i].weight < dist[adjacency_list[v][i].vert]) {
+        dist[adjacency_list[v][i].vert] = dist[v] + adjacency_list[v][i].weight;
+        if (adjacency_list[v][i].weight == 0) {
+          vert.push_front(adjacency_list[v][i].vert);
+        } else {
+          vert.push_back(adjacency_list[v][i].vert);
+        }
+        prev[adjacency_list[v][i].vert] = v;
+      }
+    }
+  }
+
+  if (dist[finish] == std::numeric_limits<int>::max()) {
+    std::cout << -1 << "\n";
+  } else {
+    std::cout << dist[finish] << "\n";
+  }
+}
+
+int main() {
+  std::ios_base::sync_with_stdio(false);
+  std::cin.tie(nullptr);
+
+  int n, m;
+  std::cin >> n >> m;
+
+  int start, finish;
+  std::cin >> start >> finish;
+
+  start--;
+  finish--;
+
+  std::vector<std::vector<Pair>> adjacency_list;
+
+  for (int i = 0; i < n; ++i) {
+    std::vector<Pair> push_vector;
+    adjacency_list.push_back(push_vector);
+  }
+
+  for (int i = 0; i < m; ++i) {
+    int first, second, w;
+    std::cin >> first >> second >> w;
+    first--;
+    second--;
+    Pair pair{second, w};
+    adjacency_list[first].push_back(pair);
+  }
+
+  Dijkstra(adjacency_list, start, finish);
+}

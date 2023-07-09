@@ -1,0 +1,301 @@
+#include <iostream>
+#include <algorithm>
+#include <deque>
+#include <limits>
+#include <vector>
+
+struct Pair {
+  int x;
+  int y;
+};
+
+void AddVertices(std::deque<Pair>& vertices, std::vector<std::vector<int>>& dist,
+                 std::vector<std::vector<Pair>>& parent, std::vector<std::vector<bool>>& used, int n, int m, int x,
+                 int y) {
+  Pair par{x, y};
+  if (x != 0 && x != n - 1) {
+    if (y != 0 && y != m - 1) {
+      Pair first{x, y + 1};
+      Pair second{x + 1, y};
+      Pair third{x - 1, y};
+      Pair fourth{x, y - 1};
+      if (dist[x][y + 1] == -1 && !used[x][y + 1]) {
+        vertices.push_back(first);
+        parent[x][y + 1] = par;
+        used[x][y + 1] = true;
+      }
+      if (dist[x + 1][y] == -1 && !used[x + 1][y]) {
+        vertices.push_back(second);
+        parent[x + 1][y] = par;
+        used[x + 1][y] = true;
+      }
+
+      if (dist[x - 1][y] == -1 && !used[x - 1][y]) {
+        vertices.push_back(third);
+        parent[x - 1][y] = par;
+        used[x - 1][y] = true;
+      }
+      if (dist[x][y - 1] == -1 && !used[x][y - 1]) {
+        vertices.push_back(fourth);
+        parent[x][y - 1] = par;
+        used[x][y - 1] = true;
+      }
+    } else {
+      if (y == 0) {
+        if (m != 1) {
+          Pair first{x, y + 1};
+          if (dist[x][y + 1] == -1 && !used[x][y + 1]) {
+            vertices.push_back(first);
+            parent[x][y + 1] = par;
+            used[x][y + 1] = true;
+          }
+        }
+        Pair second{x + 1, y};
+        Pair third{x - 1, y};
+        if (dist[x + 1][y] == -1 && !used[x + 1][y]) {
+          vertices.push_back(second);
+          parent[x + 1][y] = par;
+          used[x + 1][y] = true;
+        }
+        if (dist[x - 1][y] == -1 && !used[x - 1][y]) {
+          vertices.push_back(third);
+          parent[x - 1][y] = par;
+          used[x - 1][y] = true;
+        }
+      } else {
+        if (y == m - 1) {
+          Pair second{x + 1, y};
+          Pair third{x - 1, y};
+          Pair fourth{x, y - 1};
+          if (dist[x + 1][y] == -1 && !used[x + 1][y]) {
+            vertices.push_back(second);
+            parent[x + 1][y] = par;
+            used[x + 1][y] = true;
+          }
+          if (dist[x - 1][y] == -1 && !used[x - 1][y]) {
+            vertices.push_back(third);
+            parent[x - 1][y] = par;
+            used[x - 1][y] = true;
+          }
+          if (dist[x][y - 1] == -1 && !used[x][y - 1]) {
+            vertices.push_back(fourth);
+            parent[x][y - 1] = par;
+            used[x][y - 1] = true;
+          }
+        }
+      }
+    }
+  } else {
+    if (x == 0) {
+      if (y != 0 && y != m - 1) {
+        if (n != 1) {
+          Pair second{x + 1, y};
+          if (dist[x + 1][y] == -1 && !used[x + 1][y]) {
+            vertices.push_back(second);
+            parent[x + 1][y] = par;
+            used[x + 1][y] = true;
+          }
+        }
+        Pair first{x, y + 1};
+        Pair fourth{x, y - 1};
+        if (dist[x][y + 1] == -1 && !used[x][y + 1]) {
+          vertices.push_back(first);
+          parent[x][y + 1] = par;
+          used[x][y + 1] = true;
+        }
+        if (dist[x][y - 1] == -1 && !used[x][y - 1]) {
+          vertices.push_back(fourth);
+          parent[x][y - 1] = par;
+          used[x][y - 1] = true;
+        }
+      } else {
+        if (y == 0) {
+          if (m != 1) {
+            Pair first{x, y + 1};
+            if (dist[x][y + 1] == -1 && !used[x][y + 1]) {
+              vertices.push_back(first);
+              parent[x][y + 1] = par;
+              used[x][y + 1] = true;
+            }
+          }
+          if (n != 1) {
+            Pair second{x + 1, y};
+            if (dist[x + 1][y] == -1 && !used[x + 1][y]) {
+              vertices.push_back(second);
+              parent[x + 1][y] = par;
+              used[x + 1][y] = true;
+            }
+          }
+        } else {
+          if (y == m - 1) {
+            if (n != 1) {
+              Pair second{x + 1, y};
+              if (dist[x + 1][y] == -1 && !used[x + 1][y]) {
+                vertices.push_back(second);
+                parent[x + 1][y] = par;
+                used[x + 1][y] = true;
+              }
+            }
+            Pair fourth{x, y - 1};
+            if (dist[x][y - 1] == -1 && !used[x][y - 1]) {
+              vertices.push_back(fourth);
+              parent[x][y - 1] = par;
+              used[x][y - 1] = true;
+            }
+          }
+        }
+      }
+    } else {
+      if (y != 0 && y != m - 1) {
+        Pair first{x, y + 1};
+        Pair fourth{x, y - 1};
+        Pair third{x - 1, y};
+        if (dist[x][y + 1] == -1 && !used[x][y + 1]) {
+          vertices.push_back(first);
+          parent[x][y + 1] = par;
+          used[x][y + 1] = true;
+        }
+        if (dist[x][y - 1] == -1 && !used[x][y - 1]) {
+          vertices.push_back(fourth);
+          parent[x][y - 1] = par;
+          used[x][y - 1] = true;
+        }
+        if (dist[x - 1][y] == -1 && !used[x - 1][y]) {
+          vertices.push_back(third);
+          parent[x - 1][y] = par;
+          used[x - 1][y] = true;
+        }
+      } else {
+        if (y == 0) {
+          if (m != 1) {
+            Pair first{x, y + 1};
+            if (dist[x][y + 1] == -1 && !used[x][y + 1]) {
+              vertices.push_back(first);
+              parent[x][y + 1] = par;
+              used[x][y + 1] = true;
+            }
+          }
+          if (n != 1) {
+            Pair third{x - 1, y};
+            if (dist[x - 1][y] == -1 && !used[x - 1][y]) {
+              vertices.push_back(third);
+              parent[x - 1][y] = par;
+              used[x - 1][y] = true;
+            }
+          }
+        } else {
+          if (y == m - 1) {
+            Pair fourth{x, y - 1};
+            if (dist[x][y - 1] == -1 && !used[x][y - 1]) {
+              vertices.push_back(fourth);
+              parent[x][y - 1] = par;
+              used[x][y - 1] = true;
+            }
+            if (n != 1) {
+              Pair third{x - 1, y};
+              if (dist[x - 1][y] == -1 && !used[x - 1][y]) {
+                vertices.push_back(third);
+                parent[x - 1][y] = par;
+                used[x - 1][y] = true;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+void BFS(bool** map, int n, int m) {
+  std::vector<std::vector<int>> dist;
+  for (int i = 0; i < n; ++i) {
+    std::vector<int> push_vector;
+    dist.push_back(push_vector);
+  }
+  std::vector<std::vector<bool>> used;
+  for (int i = 0; i < n; ++i) {
+    std::vector<bool> push_vector;
+    for (int j = 0; j < m; ++j) {
+      push_vector.push_back(false);
+    }
+    used.push_back(push_vector);
+  }
+  std::vector<std::vector<Pair>> parent;
+  for (int i = 0; i < n; ++i) {
+    std::vector<Pair> push_vector;
+    parent.push_back(push_vector);
+  }
+
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      Pair pair{-1, -1};
+      parent[i].push_back(pair);
+    }
+  }
+
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      if (map[i][j]) {
+        dist[i].push_back(0);
+      } else {
+        dist[i].push_back(-1);
+      }
+    }
+  }
+
+  std::deque<Pair> vertices;
+
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      if (dist[i][j] == 0) {
+        Pair crossroads{i, j};
+        vertices.push_back(crossroads);
+        used[i][j] = true;
+      }
+    }
+  }
+
+  while (!vertices.empty()) {
+    int x = vertices.front().x;
+    int y = vertices.front().y;
+    vertices.pop_front();
+    if (dist[x][y] == -1) {
+      int parent_x = parent[x][y].x;
+      int parent_y = parent[x][y].y;
+      dist[x][y] = dist[parent_x][parent_y] + std::abs(x - parent_x) + std::abs(y - parent_y);
+    }
+    AddVertices(vertices, dist, parent, used, n, m, x, y);
+  }
+
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      std::cout << dist[i][j] << " ";
+    }
+    std::cout << "\n";
+  }
+}
+
+int main() {
+  int n, m;
+  std::cin >> n >> m;
+  auto map = new bool*[n];
+  for (int i = 0; i < n; ++i) {
+    map[i] = new bool[m];
+  }
+  int number;
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < m; ++j) {
+      std::cin >> number;
+      if (number == 1) {
+        map[i][j] = true;
+      } else {
+        map[i][j] = false;
+      }
+    }
+  }
+  BFS(map, n, m);
+  for (int i = 0; i < n; ++i) {
+    delete[] map[i];
+  }
+  delete[] map;
+}
