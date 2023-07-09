@@ -1,0 +1,48 @@
+#include <iostream>
+
+void PixelArt(int64_t n, int64_t m, int64_t k) {
+  auto kol = new int64_t[k];
+  for (int64_t i = 0; i < k; ++i) {
+    kol[i] = k * ((m - (m % k)) / k) * ((n - (n % k)) / k);
+  }
+  if (n % k != 0) {
+    for (int64_t i = 0; i < k; ++i) {
+      kol[i] += (n % k) * ((m - (m % k)) / k);
+    }
+  }
+  if (m % k != 0) {
+    for (int64_t i = 0; i < k; ++i) {
+      kol[i] += (m % k) * ((n - (n % k)) / k);
+    }
+  }
+
+  int64_t p = m % k;
+  int64_t q = n % k;
+
+  if (p > q) {
+    std::swap(p, q);
+  }
+
+  for (int64_t i = 0; i < p; ++i) {
+    kol[i] += i + 1;
+  }
+  for (int64_t i = p; i < q; ++i) {
+    kol[i % k] += p;
+  }
+  int64_t id = 1;
+  for (int64_t i = q; i < q + p - 1; ++i) {
+    kol[i % k] += p - id;
+    ++id;
+  }
+
+  for (int64_t i = 0; i < k; ++i) {
+    std::cout << kol[i] << " ";
+  }
+  delete[] kol;
+}
+
+int main() {
+  int64_t n, m, k;
+  std::cin >> n >> m >> k;
+  PixelArt(n, m, k);
+}

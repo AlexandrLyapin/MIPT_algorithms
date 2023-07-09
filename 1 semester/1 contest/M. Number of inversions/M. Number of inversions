@@ -1,0 +1,61 @@
+#include <iostream>
+
+uint64_t Merge(int* a, int l, int r, int* out) {
+  int mid = (r + l) / 2;
+  int mid1 = (r + l) / 2 + 1;
+  int mid_l = l;
+  int mid_r = mid + 1;
+  int k = 0;
+  uint64_t sum = 0;
+  while (mid_l <= mid && mid_r <= r) {
+    if (a[mid_l] <= a[mid_r]) {
+      out[k] = a[mid_l];
+      ++mid_l;
+    } else {
+      out[k] = a[mid_r];
+      ++mid_r;
+      sum += mid1 - mid_l;
+    }
+    ++k;
+  }
+
+  while (mid_l <= mid) {
+    out[k] = a[mid_l];
+    ++mid_l;
+    ++k;
+  }
+  while (mid_r <= r) {
+    out[k] = a[mid_r];
+    ++mid_r;
+    ++k;
+  }
+  return sum;
+}
+uint64_t Sort(int* a, int l, int r, int* out) {
+  if (r == l) {
+    return 0;
+  }
+  int mid = (r + l) / 2;
+  uint64_t a1 = Sort(a, l, mid, out);
+  uint64_t a2 = Sort(a, mid + 1, r, out);
+  uint64_t a3 = Merge(a, l, r, out);
+  for (int i = l; i <= r; ++i) {
+    a[i] = out[i - l];
+  }
+  return a1 + a2 + a3;
+}
+
+int main() {
+  int n;
+  uint64_t sum = 0;
+  std::cin >> n;
+  auto a = new int[n];
+  auto b = new int[n];
+  for (int i = 0; i < n; ++i) {
+    std::cin >> a[i];
+  }
+  sum = Sort(a, 0, n - 1, b);
+  std::cout << sum;
+  delete[] b;
+  delete[] a;
+}

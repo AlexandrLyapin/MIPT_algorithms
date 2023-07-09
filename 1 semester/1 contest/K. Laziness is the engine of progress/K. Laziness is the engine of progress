@@ -1,0 +1,41 @@
+#include <iostream>
+#include <cstring>
+#include <cstdlib>
+
+int64_t Script(char* mass, int len_substring, int len_a) {
+  int64_t quantity = 0;
+  int i = 0;
+  while (mass[i] != '\0' && len_a - i > len_substring) {
+    int64_t sum_alpha = 0;
+    int y = i;
+    int t = i;
+    i += len_substring;
+    while (mass[i] == mass[y]) {
+      if (y - t == len_substring - 1) {
+        y = t;
+      } else {
+        y++;
+      }
+      i++;
+      sum_alpha++;
+    }
+    quantity += ((sum_alpha * (sum_alpha + 1)) / 2);
+    if (sum_alpha != 0) {
+      i = t + sum_alpha;
+    } else {
+      if (len_substring != 1) {
+        i = t + 1;
+      }
+    }
+  }
+  return quantity;
+}
+
+int main() {
+  int len_substring;
+  std::cin >> len_substring;
+  char a[1000001];
+  std::cin >> a;
+  int len_a = std::strlen(a);
+  std::cout << Script(a, len_substring, len_a);
+}

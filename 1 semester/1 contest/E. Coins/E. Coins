@@ -1,0 +1,79 @@
+#include <iostream>
+#include <cmath>
+
+int Check(int* a, int n, int cost) {
+  int sum = 0;
+  int sum_all = 0;
+  int id = 0;
+  int quantity = 0;
+  int kmin = 10000;
+  int fit_point = -2;
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n - i - 1; ++j) {
+      if (a[j] < a[j + 1]) {
+        std::swap(a[j], a[j + 1]);
+      }
+    }
+  }
+  for (int i = 0; i < n; ++i) {
+    sum_all += a[i] * 2;
+  }
+  if (sum_all < cost) {
+    return -1;
+  }
+  auto maxx = static_cast<int>(pow(3, n));
+  for (int i = 0; i < maxx; ++i) {
+    int y = i;
+    while (sum < cost && y > 0) {
+      quantity += y % 3;
+      sum += (y % 3) * a[id];
+      y /= 3;
+      ++id;
+    }
+    if (sum == cost) {
+      if (quantity < kmin) {
+        kmin = quantity;
+        fit_point = i;
+      }
+    }
+    quantity = 0;
+    sum = 0;
+    id = 0;
+  }
+  return fit_point;
+}
+
+int main() {
+  int cost;
+  int n;
+  int checker;
+  int s = 0;
+  std::cin >> cost >> n;
+  auto a = new int[n];
+  auto b = new int[n];
+  for (int i = 0; i < n; ++i) {
+    std::cin >> a[i];
+  }
+  checker = Check(a, n, cost);
+  if (checker == -1) {
+    std::cout << -1;
+  }
+  if (checker == -2) {
+    std::cout << 0;
+  }
+  if (checker > 0) {
+    for (int i = 0; i < n; ++i) {
+      b[i] = checker % 3;
+      s += b[i];
+      checker /= 3;
+    }
+    std::cout << s << "\n";
+    for (int i = 0; i < n; ++i) {
+      for (int j = 0; j < b[i]; j++) {
+        std::cout << a[i] << " ";
+      }
+    }
+  }
+  delete[] a;
+  delete[] b;
+}

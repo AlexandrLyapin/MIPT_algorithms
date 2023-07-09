@@ -1,0 +1,90 @@
+#include <iostream>
+
+void Heapify(int* a, int n, int i) {
+  int largest = i;
+  int l = 2 * i + 1;
+  int r = 2 * i + 2;
+  if (l < n && a[largest] < a[l]) {
+    largest = l;
+  }
+  if (r < n && a[largest] < a[r]) {
+    largest = r;
+  }
+  if (largest < i || i < largest) {
+    std::swap(a[i], a[largest]);
+    Heapify(a, n, largest);
+  }
+}
+
+void Sort(int* begin, int* end) {
+  int n = end - begin + 1;
+  for (int i = n / 2 - 1; 0 < i || !(0 - i); i--) {
+    Heapify(begin, n, i);
+  }
+  for (int i = n - 1; 0 < i || !(0 - i); i--) {
+    std::swap(begin[0], begin[i]);
+    Heapify(begin, i, 0);
+  }
+}
+
+int Exc(int* a, int* b, int size) {
+  int k = 0;
+  for (int i = 0; i < size; ++i) {
+    if (i == 0) {
+      b[k] = a[i];
+      k++;
+    } else {
+      if (a[i] != a[i - 1]) {
+        b[k] = a[i];
+        k++;
+      }
+    }
+  }
+  return k;
+}
+
+int main() {
+  int n, m;
+  int s, t;
+  int sum = 0;
+  std::cin >> n;
+  auto a = new int[n];
+  for (int i = 0; i < n; ++i) {
+    std::cin >> a[i];
+  }
+  std::cin >> m;
+  auto b = new int[m];
+  for (int i = 0; i < m; ++i) {
+    std::cin >> b[i];
+  }
+  auto a1 = new int[n];
+  auto b1 = new int[m];
+
+  Sort(a, a + n - 1);
+  Sort(b, b + m - 1);
+
+  s = Exc(a, a1, n);
+  t = Exc(b, b1, m);
+  if (s != t) {
+    std::cout << "NO";
+    delete[] a;
+    delete[] b;
+    delete[] a1;
+    delete[] b1;
+    return 0;
+  }
+  for (int i = 0; i < s; ++i) {
+    if (a1[i] == b1[i]) {
+      sum++;
+    }
+  }
+  if (sum == s) {
+    std::cout << "YES";
+  } else {
+    std::cout << "NO";
+  }
+  delete[] a;
+  delete[] b;
+  delete[] a1;
+  delete[] b1;
+}

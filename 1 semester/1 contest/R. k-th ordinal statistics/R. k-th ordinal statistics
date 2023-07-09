@@ -1,0 +1,42 @@
+#ifndef KTH
+#define KTH
+
+#include <iostream>
+template <typename T>
+int Partition(T* begin, T* end) {
+  auto pivot = begin[0];
+  int n = end - begin;
+  auto l = 0;
+  auto r = n - 1;
+  while (l < r) {
+    while (!(pivot < begin[l])) {
+      l++;
+    }
+    while (!(begin[r] < pivot) && 0 < r) {
+      r--;
+    }
+    if (!(l < r)) {
+      break;
+    }
+    std::swap(begin[l], begin[r]);
+  }
+  std::swap(begin[0], begin[r]);
+  return r;
+}
+
+template <typename U>
+void KthElement(U* begin, const U* kth, U* end) {
+  auto k = kth - begin;
+  auto r = Partition(begin, end);
+  if (!(k - r)) {
+    return;
+  }
+  if (k < r) {
+    KthElement(begin, kth, begin + r);
+  }
+  if (r < k) {
+    KthElement(begin + r + 1, kth, end);
+  }
+}
+
+#endif

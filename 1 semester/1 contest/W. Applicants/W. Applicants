@@ -1,0 +1,62 @@
+#include <iostream>
+
+void Heapify(int* a, int n, int i) {
+  int largest = i;
+  int l = 2 * i + 1;
+  int r = 2 * i + 2;
+  if (l < n && a[largest] < a[l]) {
+    largest = l;
+  }
+  if (r < n && a[largest] < a[r]) {
+    largest = r;
+  }
+  if (largest < i || i < largest) {
+    std::swap(a[i], a[largest]);
+    Heapify(a, n, largest);
+  }
+}
+void Sort(int* begin, int* end) {
+  int n = end - begin;
+  for (int i = n / 2 - 1; 0 < i || !(0 - i); i--) {
+    Heapify(begin, n, i);
+  }
+  for (int i = n - 1; 0 < i || !(0 - i); i--) {
+    std::swap(begin[0], begin[i]);
+    Heapify(begin, i, 0);
+  }
+}
+
+int Group(int* begin, int m, int k, int n, int left, int right) {
+  int mid = (right + left) / 2;
+  int kik = n - (m * k);
+  int i = 0;
+  if (right - left <= 1) {
+    return right;
+  }
+  while (i < n - k + 1) {
+    if (begin[i + k - 1] - begin[i] <= mid) {
+      i += k;
+    } else {
+      if (kik != 0) {
+        i++;
+        kik--;
+      } else {
+        return Group(begin, m, k, n, mid, right);
+      }
+    }
+  }
+  return Group(begin, m, k, n, left, mid);
+}
+
+int main() {
+  int n, m, k;
+  std::cin >> n >> m >> k;
+  auto a = new int[n];
+  for (int i = 0; i < n; ++i) {
+    std::cin >> a[i];
+  }
+  Sort(a, a + n);
+  int answer = Group(a, m, k, n, -1, a[n - 1] - a[0]);
+  std::cout << answer;
+  delete[] a;
+}

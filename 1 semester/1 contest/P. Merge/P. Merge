@@ -1,0 +1,33 @@
+#ifndef MERG
+#define MERG
+
+#include <iostream>
+
+template <typename T, typename U, typename R>
+void Merge(const T* first_begin, const T* first_end, const U* second_begin, const U* second_end, R* out) {
+  int first_size = first_end - first_begin;
+  int second_size = second_end - second_begin;
+  int i = 0, k = 0, t = 0;
+  while (i < first_size && t < second_size) {
+    if (second_begin[t] < first_begin[i]) {
+      out[k] = second_begin[t];
+      t++;
+    } else {
+      out[k] = first_begin[i];
+      i++;
+    }
+    k++;
+  }
+  while (i < first_size) {
+    out[k] = first_begin[i];
+    i++;
+    k++;
+  }
+  while (t < second_size) {
+    out[k] = second_begin[t];
+    t++;
+    k++;
+  }
+}
+
+#endif

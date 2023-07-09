@@ -1,0 +1,33 @@
+#ifndef BIN
+#define BIN
+
+#include <iostream>
+template <typename T>
+void heapify(T* a, int n, int i) {
+  int largest = i;
+  int l = 2 * i + 1;
+  int r = 2 * i + 2;
+  if (l < n && a[largest] < a[l]) {
+    largest = l;
+  }
+  if (r < n && a[largest] < a[r]) {
+    largest = r;
+  }
+  if (largest < i || i < largest) {
+    std::swap(a[i], a[largest]);
+    heapify(a, n, largest);
+  }
+}
+template <typename U>
+void Sort(U* begin, U* end) {
+  int n = end - begin;
+  for (int i = n / 2 - 1; 0 < i || !(0 - i); i--) {
+    heapify(begin, n, i);
+  }
+  for (int i = n - 1; 0 < i || !(0 - i); i--) {
+    std::swap(begin[0], begin[i]);
+    heapify(begin, i, 0);
+  }
+}
+
+#endif

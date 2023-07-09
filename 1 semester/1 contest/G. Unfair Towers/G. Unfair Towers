@@ -1,0 +1,21 @@
+#include <iostream>
+
+template <typename T>
+void Heap(T n, T k, T p) {
+  if (n == 1) {
+    std::cout << "1 " << k << " " << p << std::endl;
+  } else {
+    int i = 6 - k - p;
+    Heap(n - 1, k, p);
+    std::cout << n << " " << k << " " << i << std::endl;
+    Heap(n - 1, p, k);
+    std::cout << n << " " << i << " " << p << std::endl;
+    Heap(n - 1, k, p);
+  }
+}
+
+int main() {
+  int n;
+  std::cin >> n;
+  Heap<int>(n, 1, 3);
+}

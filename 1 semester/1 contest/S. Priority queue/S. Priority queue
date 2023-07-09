@@ -1,0 +1,47 @@
+#ifndef HEAP
+#define HEAP
+
+#include <iostream>
+template <typename S>
+void Swap(S* data, long long i, long long j) {
+  S c = data[i];
+  data[i] = data[j];
+  data[j] = c;
+}
+
+template <typename T>
+void PushHeap(T* begin, T* end) {
+  long long size = end - begin - 1;
+  long long i = size;
+  while (0 < i && begin[(i - 1) / 2] < begin[i]) {
+    Swap(begin, ((i - 1) / 2), i);
+    i = (i - 1) / 2;
+  }
+}
+
+template <typename U>
+void PopHeap(U* begin, U* end) {
+  long long size = end - begin - 1;
+  long long i = 0;
+  Swap(begin, 0, size);
+  long long l = 2 * i + 1;
+  long long r = 2 * i + 2;
+  while ((l < size && begin[i] < begin[l]) || (r < size && begin[i] < begin[r])) {
+    if (r < size && begin[i] < begin[r]) {
+      if (l < size && begin[r] < begin[l]) {
+        Swap(begin, l, i);
+        i = l;
+      } else {
+        Swap(begin, r, i);
+        i = r;
+      }
+    } else {
+      Swap(begin, l, i);
+      i = l;
+    }
+    l = 2 * i + 1;
+    r = 2 * i + 2;
+  }
+}
+
+#endif

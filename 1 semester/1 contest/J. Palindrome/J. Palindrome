@@ -1,0 +1,109 @@
+#include <iostream>
+#include <cstring>
+#include <cctype>
+
+void CheckingIdenticalElements(char* begin, int& left, int& right) {
+  while ((right - left) > 0 && (begin[left] == begin[right])) {
+    left++;
+    right--;
+  }
+}
+
+int Palindrome(char* begin, char* end) {
+  int len = end - begin + 1;
+  int left = 0;
+  int right = len - 1;
+  if (len == 1) {
+    return -1;
+  }
+  CheckingIdenticalElements(begin, left, right);
+  if (right - left < 1) {
+    return -1;
+  }
+  int l = left;
+  int r = right;
+  int element = begin[left];
+  begin[left] = begin[right];
+  left++;
+  right--;
+  CheckingIdenticalElements(begin, left, right);
+  if (right - left < 1) {
+    return l;
+  }
+  begin[l] = element;
+  left = l;
+  right = r;
+  left++;
+  CheckingIdenticalElements(begin, left, right);
+  if (right - left < 1) {
+    return l;
+  }
+  left = l;
+  right = r;
+  right--;
+  while ((right - left) > 0 && (begin[left] == begin[right])) {
+    left++;
+    right--;
+  }
+  if (right - left < 1) {
+    return r;
+  }
+  return -2;
+}
+
+void Print(char* begin, char* end, int check) {
+  int len = end - begin + 1;
+  int left = 0;
+  int right = len - 1;
+  int ell = begin[check];
+  begin[check] = begin[len - 1 - check];
+  while ((right - left) > 0 && (begin[left] == begin[right])) {
+    left++;
+    right--;
+  }
+  if (right - left < 1) {
+    for (int i = 0; i < len; ++i) {
+      std::cout << static_cast<char>(std::toupper(begin[i]));
+    }
+    return;
+  }
+  begin[check] = ell;
+  for (int i = 0; i < len; ++i) {
+    if (i != check) {
+      std::cout << static_cast<char>(std::toupper(begin[i]));
+    }
+  }
+}
+
+int main() {
+  int n = 10 * 10 * 10 * 10 * 10;
+  int sum_alpha = 0;
+  auto a = new char[n];
+  std::cin.get(a, n);
+  int len = std::strlen(a);
+  auto b = new char[len];
+  for (int i = 0; i < len; ++i) {
+    if (std::isalpha(a[i])) {
+      b[sum_alpha] = std::tolower(a[i]);
+      sum_alpha++;
+    }
+  }
+  int check = Palindrome(b, b + sum_alpha - 1);
+  if (check == -2) {
+    std::cout << "NO";
+  }
+  if (check == -1) {
+    std::cout << "YES";
+    std::cout << std::endl;
+    for (int i = 0; i < sum_alpha; ++i) {
+      std::cout << static_cast<char>(std::toupper(b[i]));
+    }
+  }
+  if (check >= 0) {
+    std::cout << "YES";
+    std::cout << std::endl;
+    Print(b, b + sum_alpha - 1, check);
+  }
+  delete[] a;
+  delete[] b;
+}

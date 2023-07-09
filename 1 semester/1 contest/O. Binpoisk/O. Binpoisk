@@ -1,0 +1,56 @@
+#ifndef BIN
+#define BIN
+
+template <typename T>
+bool BinarySearch(const T* begin, const T* end, const T& value) {
+  int size = end - begin;
+  int left = -1;
+  int right = size;
+  while (right - left > 1) {
+    int middle = (left + right) / 2;
+    if (begin[middle] < value) {
+      left = middle;
+    } else {
+      right = middle;
+    }
+  }
+  if (!(right < size || size < right)) {
+    return false;
+  }
+  if (begin[right] < value || value < begin[right]) {
+    return false;
+  }
+  return true;
+}
+template <typename U>
+const U* UpperBound(const U* begin, const U* end, const U& value) {
+  int size = end - begin;
+  int left = -1;
+  int right = size;
+  while (right - left > 1) {
+    int middle = (left + right) / 2;
+    if (value < begin[middle]) {
+      right = middle;
+    } else {
+      left = middle;
+    }
+  }
+  return begin + right;
+}
+template <typename C>
+const C* LowerBound(const C* begin, const C* end, const C& value) {
+  int size = end - begin;
+  int left = -1;
+  int right = size;
+  while (right - left > 1) {
+    int middle = (left + right) / 2;
+    if (begin[middle] < value) {
+      left = middle;
+    } else {
+      right = middle;
+    }
+  }
+  return begin + right;
+}
+
+#endif
