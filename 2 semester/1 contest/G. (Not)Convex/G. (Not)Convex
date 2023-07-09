@@ -1,0 +1,99 @@
+#include <iostream>
+
+struct Floatpoint {
+  int64_t x;
+  int64_t y;
+};
+
+struct Vector {
+  int64_t x1;
+  int64_t y1;
+  int64_t x2;
+  int64_t y2;
+};
+
+struct Polygon {
+  int n;
+  Floatpoint* pointarray;
+
+  ~Polygon() {
+    delete[] pointarray;
+  }
+};
+
+void SetVector(Vector& ab, const Floatpoint& a, const Floatpoint& b) {
+  ab.x1 = a.x;
+  ab.y1 = a.y;
+  ab.x2 = b.x;
+  ab.y2 = b.y;
+}
+
+int64_t VectorProduct(const Vector& v1, const Vector& v2) {
+  return (v1.x2 - v1.x1) * (v2.y2 - v2.y1) - (v2.x2 - v2.x1) * (v1.y2 - v1.y1);
+}
+
+bool ConvexityTest(const Polygon& polygon) {
+  bool sign;
+  bool defined = false;
+  int counter = 0;
+  while (!defined && counter < (polygon.n - 1)) {
+    Vector a, b;
+    if (counter != polygon.n - 2) {
+      SetVector(a, polygon.pointarray[counter], polygon.pointarray[counter + 1]);
+      SetVector(b, polygon.pointarray[counter + 1], polygon.pointarray[counter + 2]);
+    } else {
+      SetVector(a, polygon.pointarray[counter], polygon.pointarray[counter + 1]);
+      SetVector(b, polygon.pointarray[counter + 1], polygon.pointarray[0]);
+    }
+    if (VectorProduct(a, b) != 0) {
+      sign = (VectorProduct(a, b) >= 0);
+      defined = true;
+    }
+    counter++;
+  }
+
+  if (!defined) {
+    sign = true;
+  }
+
+  for (int i = 0; i < (polygon.n - 1); ++i) {
+    if (i != (polygon.n - 2)) {
+      Vector a, b;
+      SetVector(a, polygon.pointarray[i], polygon.pointarray[i + 1]);
+      SetVector(b, polygon.pointarray[i + 1], polygon.pointarray[i + 2]);
+      if ((VectorProduct(a, b) > 0 && !sign) || (VectorProduct(a, b) < 0 && sign)) {
+        return false;
+      }
+    } else {
+      Vector a, b;
+      SetVector(a, polygon.pointarray[i], polygon.pointarray[i + 1]);
+      SetVector(b, polygon.pointarray[i + 1], polygon.pointarray[0]);
+      if ((VectorProduct(a, b) > 0 && !sign) || (VectorProduct(a, b) < 0 && sign)) {
+        return false;
+      }
+    }
+  }
+  Vector a, b;
+  SetVector(a, polygon.pointarray[polygon.n - 1], polygon.pointarray[0]);
+  SetVector(b, polygon.pointarray[0], polygon.pointarray[1]);
+  return !((VectorProduct(a, b) > 0 && !sign) || (VectorProduct(a, b) < 0 && sign));
+}
+
+int main() {
+  Polygon polygon;
+
+  std::cin >> polygon.n;
+  polygon.pointarray = new Floatpoint[polygon.n];
+
+  for (int i = 0; i < polygon.n; ++i) {
+    Floatpoint point;
+    std::cin >> point.x >> point.y;
+    polygon.pointarray[i] = point;
+  }
+
+  if (ConvexityTest(polygon)) {
+    std::cout << "YES";
+  } else {
+    std::cout << "NO";
+  }
+}

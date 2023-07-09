@@ -1,0 +1,51 @@
+#include <iostream>
+#include <cmath>
+#include <iomanip>
+
+struct Straight {
+  double a;
+  double b;
+  double c;
+};
+
+double GuideVectorX(const Straight& line) {
+  return static_cast<double>(line.b);
+}
+
+double GuideVectorY(const Straight& line) {
+  return static_cast<double>(-line.a);
+}
+
+double Distance(const Straight& line1, const Straight& line2) {
+  auto x = static_cast<double>(-line1.a * line1.c / (std::pow(line1.a, 2) + std::pow(line1.b, 2)));
+  auto y = static_cast<double>(-line1.b * line1.c / (std::pow(line1.a, 2) + std::pow(line1.b, 2)));
+  return std::abs(line2.a * x + line2.b * y + line2.c) / std::hypot(line2.a, line2.b);
+}
+
+double IntersectionPointY(const Straight& line1, const Straight& line2) {
+  double deltay = -line1.a * line2.c + line2.a * line1.c;
+  double delta = line1.a * line2.b - line1.b * line2.a;
+  return deltay / delta;
+}
+
+double IntersectionPointX(const Straight& line1, const Straight& line2) {
+  double deltax = -line2.b * line1.c + line2.c * line1.b;
+  double delta = line1.a * line2.b - line1.b * line2.a;
+  return deltax / delta;
+}
+
+int main() {
+  std::cout << std::setprecision(7);
+  std::cout << std::fixed;
+  Straight line1;
+  Straight line2;
+  std::cin >> line1.a >> line1.b >> line1.c;
+  std::cin >> line2.a >> line2.b >> line2.c;
+  std::cout << GuideVectorX(line1) << " " << GuideVectorY(line1) << "\n";
+  std::cout << GuideVectorX(line2) << " " << GuideVectorY(line2) << "\n";
+  if (line1.a * line2.b - line1.b * line2.a == 0) {
+    std::cout << Distance(line1, line2);
+  } else {
+    std::cout << IntersectionPointX(line1, line2) << " " << IntersectionPointY(line1, line2);
+  }
+}

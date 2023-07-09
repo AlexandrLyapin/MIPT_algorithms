@@ -1,0 +1,187 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+
+struct Floatpoint {
+  int64_t x;
+  int64_t y;
+
+  void operator=(const Floatpoint& rhs) {
+    x = rhs.x;
+    y = rhs.y;
+  }
+
+  double Length() {
+    return std::hypot(x, y);
+  }
+};
+
+struct Vector {
+  int64_t x;
+  int64_t y;
+
+  void operator=(const Floatpoint& rhs) {
+    x = rhs.x;
+    y = rhs.y;
+  }
+};
+
+struct Floatline {
+  int64_t a;
+  int64_t b;
+  int64_t c;
+};
+
+struct Polygon {
+  int size;
+  Floatpoint* pointarray;
+
+  ~Polygon() {
+    delete[] pointarray;
+  }
+};
+
+void SetVector(Vector& ab, const Floatpoint& a, const Floatpoint& b) {
+  ab.x = b.x - a.x;
+  ab.y = b.y - a.y;
+}
+
+void SetLine(Floatline& line, const Floatpoint& a, const Floatpoint& b) {
+  line.a = b.y - a.y;
+  line.b = -(b.x - a.x);
+  line.c = a.y * b.x - a.x * b.y;
+}
+
+int64_t VectorProduct(const Vector& v1, const Vector& v2) {
+  return v1.x * v2.y - v1.y * v2.x;
+}
+
+int64_t VectorProduct(const Floatpoint& v1, const Floatpoint& v2) {
+  return v1.x * v2.y - v1.y * v2.x;
+}
+
+bool operator<(Floatpoint& lhs, Floatpoint& rhs) {
+  if ((lhs.x == 0 && lhs.y == 0) && (rhs.x != 0 || rhs.y != 0)) {
+    return true;
+  }
+  if ((lhs.x != 0 || lhs.y != 0) && (rhs.x == 0 && rhs.y == 0)) {
+    return false;
+  }
+  if ((lhs.x != 0 || lhs.y != 0) && (rhs.x != 0 || rhs.y != 0) && (VectorProduct(lhs, rhs) == 0)) {
+    return lhs.Length() < rhs.Length();
+  }
+  return VectorProduct(lhs, rhs) < 0;
+}
+
+bool operator==(const Floatpoint& lhs, const Floatpoint& rhs) {
+  return ((lhs.x == rhs.x) && (lhs.y == rhs.y));
+}
+
+bool operator!=(const Floatpoint& lhs, const Floatpoint& rhs) {
+  return !(lhs == rhs);
+}
+
+Floatpoint AddingFirstPoint(Polygon& polygon, std::vector<Floatpoint>& convex_hull) {
+  Floatpoint point0 = polygon.pointarray[0];
+  for (int i = 1; i < polygon.size; ++i) {
+    if (polygon.pointarray[i].x < point0.x) {
+      point0 = polygon.pointarray[i];
+    }
+    if (polygon.pointarray[i].x == point0.x) {
+      if (polygon.pointarray[i].y < point0.y) {
+        point0 = polygon.pointarray[i];
+      }
+    }
+  }
+
+  Floatpoint zero;
+  zero.x = 0;
+  zero.y = 0;
+
+  for (int i = 0; i < polygon.size; ++i) {
+    polygon.pointarray[i].x -= point0.x;
+    polygon.pointarray[i].y -= point0.y;
+  }
+
+  convex_hull.push_back(zero);
+
+  return point0;
+}
+
+Floatpoint AppendVector(Polygon& polygon, const Floatpoint& point) {
+  for (int i = 0; i < polygon.size; ++i) {
+    polygon.pointarray[i].x -= point.x;
+    polygon.pointarray[i].y -= point.y;
+  }
+  Floatpoint appendpoint = polygon.pointarray[0];
+  for (int i = 1; i < polygon.size; ++i) {
+    if (VectorProduct(appendpoint, polygon.pointarray[i]) >= 0) {
+      if (VectorProduct(appendpoint, polygon.pointarray[i]) == 0) {
+        if (polygon.pointarray[i].Length() >= appendpoint.Length()) {
+          appendpoint = polygon.pointarray[i];
+        }
+      } else {
+        appendpoint = polygon.pointarray[i];
+      }
+    }
+  }
+  for (int i = 0; i < polygon.size; ++i) {
+    polygon.pointarray[i].x += point.x;
+    polygon.pointarray[i].y += point.y;
+  }
+  appendpoint.x += point.x;
+  appendpoint.y += point.y;
+  return appendpoint;
+}
+
+void JarvisScan(Polygon& polygon, std::vector<Floatpoint>& convex_hull) {
+  while (AppendVector(polygon, convex_hull[convex_hull.size() - 1]) != convex_hull[0]) {
+    convex_hull.push_back(AppendVector(polygon, convex_hull[convex_hull.size() - 1]));
+  }
+}
+
+void PrintConvexHull(std::vector<Floatpoint>& convex_hull, const Floatpoint& point0) {
+  for (size_t i = 0; i < convex_hull.size(); ++i) {
+    convex_hull[i].x += point0.x;
+    convex_hull[i].y += point0.y;
+  }
+
+  std::cout << convex_hull.size() << "\n";
+
+  for (size_t i = 0; i < convex_hull.size(); ++i) {
+    std::cout << convex_hull[i].x << " " << convex_hull[i].y << "\n";
+  }
+}
+
+int64_t Square(const std::vector<Floatpoint>& convex_hull) {
+  int64_t sum = 0;
+  for (size_t i = 0; i < convex_hull.size() - 1; ++i) {
+    sum += VectorProduct(convex_hull[i], convex_hull[i + 1]);
+  }
+  sum += VectorProduct(convex_hull[convex_hull.size() - 1], convex_hull[0]);
+  return std::abs(sum);
+}
+
+int main() {
+  Polygon polygon;
+
+  std::vector<Floatpoint> convex_hull;
+
+  std::cin >> polygon.size;
+
+  polygon.pointarray = new Floatpoint[polygon.size];
+  for (int i = 0; i < polygon.size; ++i) {
+    Floatpoint pointpolygon;
+    std::cin >> pointpolygon.x >> pointpolygon.y;
+    polygon.pointarray[i] = pointpolygon;
+  }
+
+  Floatpoint point0 = AddingFirstPoint(polygon, convex_hull);
+
+  JarvisScan(polygon, convex_hull);
+
+  PrintConvexHull(convex_hull, point0);
+
+  std::cout << Square(convex_hull) / 2 << '.' << (Square(convex_hull) % 2 == 0 ? '0' : '5');
+}

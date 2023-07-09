@@ -1,0 +1,50 @@
+#include <iostream>
+#include <cmath>
+#include <iomanip>
+
+struct Vector {
+  int x1;
+  int y1;
+  int x2;
+  int y2;
+};
+
+double Length(const Vector& v) {
+  return std::hypot(v.x1 - v.x2, v.y1 - v.y2);
+}
+
+double SumVectorX(const Vector& v1, const Vector& v2) {
+  return static_cast<double>(v1.x2 + (v2.x2 - v2.x1) - v1.x1);
+}
+
+double SumVectorY(const Vector& v1, const Vector& v2) {
+  return static_cast<double>(v1.y2 + (v2.y2 - v2.y1) - v1.y1);
+}
+
+double ScalarProduct(const Vector& v1, const Vector& v2) {
+  return static_cast<double>((v1.x2 - v1.x1) * (v2.x2 - v2.x1) + (v1.y2 - v1.y1) * (v2.y2 - v2.y1));
+}
+
+double VectorProduct(const Vector& v1, const Vector& v2) {
+  return static_cast<double>((v1.x2 - v1.x1) * (v2.y2 - v2.y1) - (v2.x2 - v2.x1) * (v1.y2 - v1.y1));
+}
+
+double TriangleSquare(const Vector& v1, const Vector& v2) {
+  return std::abs(VectorProduct(v1, v2)) * 0.5;
+}
+
+int main() {
+  std::cout << std::setprecision(7);
+  std::cout << std::fixed;
+  Vector vect1;
+  Vector vect2;
+  std::cin >> vect1.x1 >> vect1.y1 >> vect1.x2 >> vect1.y2;
+  std::cin >> vect2.x1 >> vect2.y1 >> vect2.x2 >> vect2.y2;
+  std::cout << Length(vect1) << " ";
+  std::cout << Length(vect2) << "\n";
+  std::cout << SumVectorX(vect1, vect2) << " ";
+  std::cout << SumVectorY(vect1, vect2) << "\n";
+  std::cout << ScalarProduct(vect1, vect2) << " ";
+  std::cout << VectorProduct(vect1, vect2) << "\n";
+  std::cout << TriangleSquare(vect1, vect2);
+}

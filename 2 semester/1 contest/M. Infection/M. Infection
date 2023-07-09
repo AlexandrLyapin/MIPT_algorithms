@@ -1,0 +1,455 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+
+struct Floatpoint {
+  int64_t x;
+  int64_t y;
+
+  void operator=(const Floatpoint& rhs) {
+    x = rhs.x;
+    y = rhs.y;
+  }
+
+  double Length() {
+    return std::hypot(x, y);
+  }
+};
+
+struct Vector {
+  int64_t x;
+  int64_t y;
+
+  void operator=(const Floatpoint& rhs) {
+    x = rhs.x;
+    y = rhs.y;
+  }
+};
+
+struct Line {
+  int64_t a;
+  int64_t b;
+  int64_t c;
+};
+
+struct Segment {
+  int64_t x1;
+  int64_t y1;
+  int64_t x2;
+  int64_t y2;
+};
+
+struct Polygon {
+  size_t size;
+  std::vector<Floatpoint> pointarray;
+};
+
+void SetVector(Vector& ab, const Floatpoint& a, const Floatpoint& b) {
+  ab.x = b.x - a.x;
+  ab.y = b.y - a.y;
+}
+
+void SetLine(Line& line, const Floatpoint& a, const Floatpoint& b) {
+  line.a = b.y - a.y;
+  line.b = -(b.x - a.x);
+  line.c = a.y * b.x - a.x * b.y;
+}
+
+void SetSegment(Segment& ab, const Floatpoint& a, const Floatpoint& b) {
+  ab.x1 = a.x;
+  ab.y1 = a.y;
+  ab.x2 = b.x;
+  ab.y2 = b.y;
+}
+
+void SetPoints(Floatpoint& a, Floatpoint& b, const Segment& ab) {
+  a.x = ab.x1;
+  a.y = ab.y1;
+  b.x = ab.x2;
+  b.y = ab.y2;
+}
+
+int64_t VectorProduct(const Vector& v1, const Vector& v2) {
+  return v1.x * v2.y - v1.y * v2.x;
+}
+
+int64_t VectorProduct(const Floatpoint& v1, const Floatpoint& v2) {
+  return v1.x * v2.y - v1.y * v2.x;
+}
+
+int64_t VectorProduct(const Segment& v1, const Segment& v2) {
+  return (v1.x2 - v1.x1) * (v2.y2 - v2.y1) - (v2.x2 - v2.x1) * (v1.y2 - v1.y1);
+}
+
+bool operator<(Floatpoint& lhs, Floatpoint& rhs) {
+  if ((lhs.x == 0 && lhs.y == 0) && (rhs.x != 0 || rhs.y != 0)) {
+    return true;
+  }
+  if ((lhs.x != 0 || lhs.y != 0) && (rhs.x == 0 && rhs.y == 0)) {
+    return false;
+  }
+  if ((lhs.x != 0 || lhs.y != 0) && (rhs.x != 0 || rhs.y != 0) && (VectorProduct(lhs, rhs) == 0)) {
+    return lhs.Length() < rhs.Length();
+  }
+  return VectorProduct(lhs, rhs) < 0;
+}
+
+bool operator==(const Floatpoint& lhs, const Floatpoint& rhs) {
+  return ((lhs.x == rhs.x) && (lhs.y == rhs.y));
+}
+
+bool operator!=(const Floatpoint& lhs, const Floatpoint& rhs) {
+  return !(lhs == rhs);
+}
+
+bool OnLine(const Line& line, const Floatpoint& c) {
+  return (line.a * c.x + line.b * c.y + line.c == 0);
+}
+
+bool OnRay(const Line& line, const Floatpoint& c, const Floatpoint& start, const Floatpoint& stop) {
+  if (OnLine(line, c)) {
+    if (stop.x > start.x && c.x >= start.x) {
+      return true;
+    }
+    if (stop.x == start.x) {
+      if (stop.y < start.y && c.y <= start.y) {
+        return true;
+      }
+      if (stop.y > start.y && c.y >= start.y) {
+        return true;
+      }
+      if (stop.y == start.y && c.y == start.y) {
+        return true;
+      }
+      return false;
+    }
+    if (stop.x < start.x && c.x <= start.x) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool PointsOnDifferentSides(const Line& line, const Floatpoint& p1, const Floatpoint& p2) {
+  int64_t sign1 = line.a * p1.x + line.b * p1.y + line.c;
+  int64_t sign2 = line.a * p2.x + line.b * p2.y + line.c;
+  if (sign1 < 0) {
+    sign1 = -1;
+  }
+  if (sign2 < 0) {
+    sign2 = -1;
+  }
+  if (sign1 == 0 || sign2 == 0) {
+    return false;
+  }
+  return (sign1 * sign2 < 0);
+}
+
+bool PointInSegment(const Floatpoint& point, const Floatpoint& startsegment, const Floatpoint& stopsegment) {
+  Line line1;
+  SetLine(line1, startsegment, stopsegment);
+  return (OnRay(line1, point, startsegment, stopsegment) && OnRay(line1, point, stopsegment, startsegment));
+}
+
+bool IntersectionSegment(const Segment& vector, const Segment& ab) {
+  Floatpoint a, b, firstpoint, secondpoint;
+  SetPoints(a, b, ab);
+  SetPoints(firstpoint, secondpoint, vector);
+  Segment ao;
+  SetSegment(ao, a, firstpoint);
+  Line line;
+  SetLine(line, firstpoint, secondpoint);
+  if (VectorProduct(vector, ab) != 0) {
+    if (OnRay(line, a, firstpoint, secondpoint) || OnRay(line, b, firstpoint, secondpoint)) {
+      return (a.y > firstpoint.y || b.y > firstpoint.y);
+    }
+    if (PointsOnDifferentSides(line, a, b)) {
+      if ((VectorProduct(ao, ab) < 0)) {
+        return (-1 * VectorProduct(vector, ab) <= 0);
+      }
+      if ((VectorProduct(vector, ab) < 0)) {
+        return (-1 * VectorProduct(ao, ab) <= 0);
+      }
+      return (VectorProduct(ao, ab) == 0 || VectorProduct(vector, ab) == 0);
+    }
+  }
+  return false;
+}
+
+bool Inside(const std::vector<Floatpoint>& convex_hull1, const Floatpoint& point) {
+  Floatpoint secondpoint;
+  Segment vector;
+  secondpoint.x = point.x - 1;
+  secondpoint.y = point.y;
+  SetSegment(vector, point, secondpoint);
+  int64_t counter = 0;
+  for (size_t i = 0; i < convex_hull1.size() - 1; ++i) {
+    Segment segment;
+    SetSegment(segment, convex_hull1[i], convex_hull1[i + 1]);
+    if (PointInSegment(point, convex_hull1[i], convex_hull1[i + 1])) {
+      return true;
+    }
+    if (IntersectionSegment(vector, segment)) {
+      counter++;
+    }
+  }
+  Segment segment;
+  SetSegment(segment, convex_hull1[convex_hull1.size() - 1], convex_hull1[0]);
+  if (PointInSegment(point, convex_hull1[convex_hull1.size() - 1], convex_hull1[0])) {
+    return true;
+  }
+  if (IntersectionSegment(vector, segment)) {
+    counter++;
+  }
+  return (counter % 2 == 1);
+}
+
+bool PointInVector(Floatpoint& point, std::vector<Floatpoint>& convex_hull, const Floatpoint& point0) {
+  for (size_t i = 0; i < convex_hull.size(); ++i) {
+    convex_hull[i].x -= point0.x;
+    convex_hull[i].y -= point0.y;
+  }
+  for (size_t i = 0; i < convex_hull.size(); ++i) {
+    if (point == convex_hull[i]) {
+      for (size_t i = 0; i < convex_hull.size(); ++i) {
+        convex_hull[i].x += point0.x;
+        convex_hull[i].y += point0.y;
+      }
+      return true;
+    }
+  }
+  for (size_t i = 0; i < convex_hull.size(); ++i) {
+    convex_hull[i].x += point0.x;
+    convex_hull[i].y += point0.y;
+  }
+  return false;
+}
+
+Floatpoint AddingFirstPoint(Polygon& polygon, std::vector<Floatpoint>& convex_hull1) {
+  Floatpoint point0 = polygon.pointarray[0];
+  for (size_t i = 1; i < polygon.pointarray.size(); ++i) {
+    if (polygon.pointarray[i].x < point0.x) {
+      point0 = polygon.pointarray[i];
+    }
+    if (polygon.pointarray[i].x == point0.x) {
+      if (polygon.pointarray[i].y < point0.y) {
+        point0 = polygon.pointarray[i];
+      }
+    }
+  }
+
+  Floatpoint zero;
+  zero.x = 0;
+  zero.y = 0;
+
+  for (size_t i = 0; i < polygon.pointarray.size(); ++i) {
+    polygon.pointarray[i].x -= point0.x;
+    polygon.pointarray[i].y -= point0.y;
+  }
+
+  convex_hull1.push_back(zero);
+
+  return point0;
+}
+
+Floatpoint AppendVector(Polygon& polygon, const Floatpoint& point, std::vector<Floatpoint>& convex_hull) {
+  for (size_t i = 0; i < polygon.pointarray.size(); ++i) {
+    polygon.pointarray[i].x -= point.x;
+    polygon.pointarray[i].y -= point.y;
+  }
+  Floatpoint t = point;
+  Floatpoint appendpoint = polygon.pointarray[0];
+  for (size_t i = 1; i < polygon.pointarray.size(); ++i) {
+    if (VectorProduct(appendpoint, polygon.pointarray[i]) >= 0) {
+      if (VectorProduct(appendpoint, polygon.pointarray[i]) == 0) {
+        if (polygon.pointarray[i].x != 0 || polygon.pointarray[i].y != 0) {
+          if (polygon.pointarray[i].Length() < appendpoint.Length() &&
+              !(PointInVector(polygon.pointarray[i], convex_hull, t))) {
+            appendpoint = polygon.pointarray[i];
+          } else {
+            if (appendpoint.x == 0 && appendpoint.y == 0) {
+              appendpoint = polygon.pointarray[i];
+            }
+          }
+        }
+      } else {
+        appendpoint = polygon.pointarray[i];
+      }
+    }
+  }
+  for (size_t i = 0; i < polygon.pointarray.size(); ++i) {
+    polygon.pointarray[i].x += point.x;
+    polygon.pointarray[i].y += point.y;
+  }
+  appendpoint.x += point.x;
+  appendpoint.y += point.y;
+  return appendpoint;
+}
+
+Floatpoint AppendVectorD(Polygon& polygon, const Floatpoint& point, std::vector<Floatpoint>& convex_hull) {
+  for (size_t i = 0; i < polygon.pointarray.size(); ++i) {
+    polygon.pointarray[i].x -= point.x;
+    polygon.pointarray[i].y -= point.y;
+  }
+  Floatpoint t = point;
+  size_t k = 0;
+  Floatpoint appendpoint = polygon.pointarray[0];
+  for (size_t i = 1; i < polygon.pointarray.size(); ++i) {
+    if (VectorProduct(appendpoint, polygon.pointarray[i]) >= 0) {
+      if (VectorProduct(appendpoint, polygon.pointarray[i]) == 0) {
+        if (polygon.pointarray[i].x != 0 || polygon.pointarray[i].y != 0) {
+          if (polygon.pointarray[i].Length() < appendpoint.Length() &&
+              !(PointInVector(polygon.pointarray[i], convex_hull, t))) {
+            appendpoint = polygon.pointarray[i];
+            k = i;
+          } else {
+            if (appendpoint.x == 0 && appendpoint.y == 0) {
+              appendpoint = polygon.pointarray[i];
+              k = i;
+            }
+          }
+        }
+      } else {
+        appendpoint = polygon.pointarray[i];
+        k = i;
+      }
+    }
+  }
+  for (size_t i = 0; i < polygon.pointarray.size(); ++i) {
+    polygon.pointarray[i].x += point.x;
+    polygon.pointarray[i].y += point.y;
+  }
+  appendpoint.x += point.x;
+  appendpoint.y += point.y;
+  std::swap(polygon.pointarray[k], polygon.pointarray[polygon.pointarray.size() - 1]);
+  polygon.pointarray.pop_back();
+  return appendpoint;
+}
+
+void JarvisScan(Polygon& polygon, std::vector<Floatpoint>& convex_hull) {
+  Floatpoint point0 = AddingFirstPoint(polygon, convex_hull);
+  while (AppendVector(polygon, convex_hull[convex_hull.size() - 1], convex_hull) != convex_hull[0]) {
+    convex_hull.push_back(AppendVectorD(polygon, convex_hull[convex_hull.size() - 1], convex_hull));
+  }
+  for (size_t i = 0; i < convex_hull.size(); ++i) {
+    convex_hull[i].x += point0.x;
+    convex_hull[i].y += point0.y;
+  }
+  for (size_t i = 0; i < polygon.pointarray.size(); ++i) {
+    polygon.pointarray[i].x += point0.x;
+    polygon.pointarray[i].y += point0.y;
+  }
+  size_t k = 0;
+  for (size_t i = 0; i < polygon.pointarray.size(); ++i) {
+    if (point0 == polygon.pointarray[i]) {
+      k = i;
+    }
+  }
+  std::swap(polygon.pointarray[k], polygon.pointarray[polygon.pointarray.size() - 1]);
+  polygon.pointarray.pop_back();
+}
+
+bool Degenerate(std::vector<Floatpoint>& convex_hull) {
+  if (convex_hull.size() < 3) {
+    return true;
+  }
+  bool degenerate = true;
+  for (size_t i = 0; i < convex_hull.size() - 2; ++i) {
+    Segment first, second;
+    SetSegment(first, convex_hull[i], convex_hull[i + 1]);
+    SetSegment(second, convex_hull[i + 1], convex_hull[i + 2]);
+    if (VectorProduct(first, second) != 0) {
+      return false;
+    }
+  }
+  return degenerate;
+}
+
+void InentificationOfNumbers(Polygon& polygon, Polygon& significantobjects) {
+  auto numbers = new int[significantobjects.size];
+  auto numbersbool = new bool[significantobjects.size];
+  std::vector<Floatpoint> convex_hull1;
+  std::vector<Floatpoint> convex_hull2;
+
+  for (size_t i = 0; i < significantobjects.pointarray.size(); ++i) {
+    numbersbool[i] = false;
+  }
+
+  JarvisScan(polygon, convex_hull1);
+
+  if (Degenerate(polygon.pointarray)) {
+    for (size_t i = 0; i < significantobjects.size; ++i) {
+      std::cout << 0 << "\n";
+    }
+    delete[] numbers;
+    delete[] numbersbool;
+    return;
+  }
+
+  size_t k = 0;
+
+  while (!(Degenerate(polygon.pointarray)) && !polygon.pointarray.empty()) {
+    JarvisScan(polygon, convex_hull2);
+
+    for (size_t i = 0; i < significantobjects.pointarray.size(); ++i) {
+      if (Inside(convex_hull1, significantobjects.pointarray[i])) {
+        if (!Degenerate(convex_hull2)) {
+          if (!(Inside(convex_hull2, significantobjects.pointarray[i]))) {
+            if (!numbersbool[i]) {
+              numbers[i] = k;
+              numbersbool[i] = true;
+            }
+          } else {
+            if (Degenerate(polygon.pointarray)) {
+              numbers[i] = k + 1;
+              numbersbool[i] = true;
+            }
+          }
+        } else {
+          if (!numbersbool[i]) {
+            numbers[i] = k;
+            numbersbool[i] = true;
+          }
+        }
+      } else {
+        if (k == 0) {
+          numbers[i] = 0;
+          numbersbool[i] = true;
+        }
+      }
+    }
+    convex_hull1.clear();
+    convex_hull1 = convex_hull2;
+    convex_hull2.clear();
+    k++;
+  }
+
+  for (size_t i = 0; i < significantobjects.size; ++i) {
+    std::cout << numbers[i] << "\n";
+  }
+
+  delete[] numbers;
+  delete[] numbersbool;
+}
+
+int main() {
+  Polygon polygon;
+  Polygon significantobjects;
+
+  std::cin >> polygon.size;
+
+  for (size_t i = 0; i < polygon.size; ++i) {
+    Floatpoint pointpolygon;
+    std::cin >> pointpolygon.x >> pointpolygon.y;
+    polygon.pointarray.push_back(pointpolygon);
+  }
+  std::cin >> significantobjects.size;
+
+  for (size_t i = 0; i < significantobjects.size; ++i) {
+    Floatpoint pointpolygon;
+    std::cin >> pointpolygon.x >> pointpolygon.y;
+    significantobjects.pointarray.push_back(pointpolygon);
+  }
+  InentificationOfNumbers(polygon, significantobjects);
+}

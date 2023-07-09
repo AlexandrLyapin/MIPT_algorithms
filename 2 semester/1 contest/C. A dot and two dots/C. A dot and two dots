@@ -1,0 +1,86 @@
+#include <iostream>
+#include <cmath>
+#include <iomanip>
+
+struct Point {
+  int x;
+  int y;
+};
+
+struct Line {
+  int a;
+  int b;
+  int c;
+};
+
+void LineCreation(Line& line, const Point& a, const Point& b) {
+  line.a = b.y - a.y;
+  line.b = -(b.x - a.x);
+  line.c = a.y * b.x - a.x * b.y;
+}
+
+bool OnLine(const Line& line, const Point& c) {
+  return (line.a * c.x + line.b * c.y + line.c == 0);
+}
+
+bool OnRay(const Line& line, const Point& c, const Point& start, const Point& stop) {
+  if (OnLine(line, c)) {
+    if (stop.x > start.x && c.x >= start.x) {
+      return true;
+    }
+    if (stop.x == start.x) {
+      if (stop.y < start.y && c.y <= start.y) {
+        return true;
+      }
+      if (stop.y > start.y && c.y >= start.y) {
+        return true;
+      }
+      if (stop.y == start.y && c.y == start.y) {
+        return true;
+      }
+      return false;
+    }
+    if (stop.x < start.x && c.x <= start.x) {
+      return true;
+    }
+  }
+  return false;
+}
+
+int main() {
+  Point a;
+  Point b;
+  Point c;
+  Line line;
+  std::cin >> c.x >> c.y;
+  std::cin >> a.x >> a.y;
+  std::cin >> b.x >> b.y;
+  LineCreation(line, a, b);
+  if (b.x == c.x && b.y == c.y) {
+    if (c.x == b.x && c.y == b.y) {
+      std::cout << "YES\n"
+                << "YES\n"
+                << "YES";
+    } else {
+      std::cout << "NO\n"
+                << "NO\n"
+                << "NO";
+    }
+  } else {
+    if (OnLine(line, c)) {
+      std::cout << "YES\n";
+    } else {
+      std::cout << "NO\n";
+    }
+    if (OnRay(line, c, a, b)) {
+      std::cout << "YES\n";
+    } else {
+      std::cout << "NO\n";
+    }
+    if (OnRay(line, c, a, b) && OnRay(line, c, b, a)) {
+      std::cout << "YES\n";
+    } else {
+      std::cout << "NO\n";
+    }
+  }
+}

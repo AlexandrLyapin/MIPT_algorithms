@@ -1,0 +1,43 @@
+#include <iostream>
+
+struct Point {
+  int64_t x;
+  int64_t y;
+};
+
+struct Polygon {
+  int64_t size;
+  Point* pointarray;
+
+  ~Polygon() {
+    delete[] pointarray;
+  }
+};
+
+int64_t Product(const Point& v1, const Point& v2) {
+  return v1.x * v2.y - v1.y * v2.x;
+}
+
+int64_t Square(const Polygon& polygon) {
+  int64_t sum = 0;
+  for (int i = 0; i < polygon.size - 1; ++i) {
+    sum += Product(polygon.pointarray[i], polygon.pointarray[i + 1]);
+  }
+  sum += Product(polygon.pointarray[polygon.size - 1], polygon.pointarray[0]);
+  return std::abs(sum);
+}
+
+int main() {
+  Polygon polygon;
+
+  std::cin >> polygon.size;
+  polygon.pointarray = new Point[polygon.size];
+
+  for (int64_t i = 0; i < polygon.size; ++i) {
+    Point point;
+    std::cin >> point.x >> point.y;
+    polygon.pointarray[i] = point;
+  }
+
+  std::cout << Square(polygon) / 2 << '.' << (Square(polygon) % 2 == 0 ? '0' : '5');
+}

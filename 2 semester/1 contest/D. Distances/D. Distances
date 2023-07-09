@@ -1,0 +1,129 @@
+#include <iostream>
+#include <cmath>
+#include <iomanip>
+
+struct Point {
+  int x;
+  int y;
+};
+
+struct Vector {
+  int x1;
+  int y1;
+  int x2;
+  int y2;
+};
+
+struct Line {
+  int a;
+  int b;
+  int c;
+};
+
+void SetVector(Vector& ab, const Point& a, const Point& b) {
+  ab.x1 = a.x;
+  ab.y1 = a.y;
+  ab.x2 = b.x;
+  ab.y2 = b.y;
+}
+
+void SetLine(Line& line, const Point& a, const Point& b) {
+  line.a = b.y - a.y;
+  line.b = -(b.x - a.x);
+  line.c = a.y * b.x - a.x * b.y;
+}
+
+double ScalarProduct(const Vector& v1, const Vector& v2) {
+  return static_cast<double>((v1.x2 - v1.x1) * (v2.x2 - v2.x1) + (v1.y2 - v1.y1) * (v2.y2 - v2.y1));
+}
+
+bool OnLine(const Line& line, const Point& c) {
+  return (line.a * c.x + line.b * c.y + line.c == 0);
+}
+
+bool OnRay(const Line& line, const Point& c, const Point& firstpoint, const Point& secondpoint) {
+  if (OnLine(line, c)) {
+    if (secondpoint.x > firstpoint.x && c.x >= firstpoint.x) {
+      return true;
+    }
+    if (secondpoint.x == firstpoint.x) {
+      if (secondpoint.y < firstpoint.y && c.y <= firstpoint.y) {
+        return true;
+      }
+      if (secondpoint.y > firstpoint.y && c.y >= firstpoint.y) {
+        return true;
+      }
+      if (secondpoint.y == firstpoint.y && c.y == firstpoint.y) {
+        return true;
+      }
+      return false;
+    }
+    if (secondpoint.x < firstpoint.x && c.x <= firstpoint.x) {
+      return true;
+    }
+  }
+  return false;
+}
+
+double DistancePoints(const Point& first, const Point& second) {
+  return std::sqrt(std::pow(second.x - first.x, 2) + std::pow(second.y - first.y, 2));
+}
+
+double DistanceToLine(const Line& line, const Point& c) {
+  if (OnLine(line, c)) {
+    return 0;
+  }
+  return std::abs(line.a * c.x + line.b * c.y + line.c) / std::hypot(line.a, line.b);
+}
+
+double DistanceToBeam(const Vector& ab, const Point& c) {
+  Line line1;
+  Point b1{ab.x2, ab.y2};
+  Point a1{ab.x1, ab.y1};
+  Vector ac;
+  SetLine(line1, a1, b1);
+  SetVector(ac, a1, c);
+  if (OnRay(line1, c, a1, b1)) {
+    return 0;
+  }
+  if (ScalarProduct(ab, ac) > 0) {
+    return std::abs(line1.a * c.x + line1.b * c.y + line1.c) / std::hypot(line1.a, line1.b);
+  }
+  return DistancePoints(a1, c);
+}
+
+double DistanceToSegment(const Point& a, const Point& b, const Point& c) {
+  Line line1;
+  SetLine(line1, a, b);
+  if (OnRay(line1, c, a, b) && OnRay(line1, c, b, a)) {
+    return 0;
+  }
+  Vector ab;
+  Vector ba;
+  Vector ac;
+  Vector bc;
+  SetVector(ab, a, b);
+  SetVector(ba, b, a);
+  SetVector(ac, a, c);
+  SetVector(bc, b, c);
+  if (ScalarProduct(ab, ac) > 0 && ScalarProduct(ba, bc) > 0) {
+    return std::abs(line1.a * c.x + line1.b * c.y + line1.c) / std::hypot(line1.a, line1.b);
+  }
+  return std::min(DistancePoints(a, c), DistancePoints(b, c));
+}
+
+int main() {
+  std::cout << std::setprecision(7);
+  std::cout << std::fixed;
+  Point a, b, c;
+  std::cin >> c.x >> c.y;
+  std::cin >> a.x >> a.y;
+  std::cin >> b.x >> b.y;
+  Vector ab;
+  SetVector(ab, a, b);
+  Line line;
+  SetLine(line, a, b);
+  std::cout << DistanceToLine(line, c) << "\n";
+  std::cout << DistanceToBeam(ab, c) << "\n";
+  std::cout << DistanceToSegment(a, b, c);
+}

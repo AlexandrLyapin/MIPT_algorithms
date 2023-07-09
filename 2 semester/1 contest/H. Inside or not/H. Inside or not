@@ -1,0 +1,190 @@
+#include <iostream>
+
+struct Point {
+  int64_t x;
+  int64_t y;
+};
+
+struct Vector {
+  int64_t x1;
+  int64_t y1;
+  int64_t x2;
+  int64_t y2;
+};
+
+struct Segment {
+  int64_t x1;
+  int64_t y1;
+  int64_t x2;
+  int64_t y2;
+};
+
+struct Line {
+  int64_t a;
+  int64_t b;
+  int64_t c;
+};
+
+struct Polygon {
+  int size;
+  Point* pointarray;
+
+  ~Polygon() {
+    delete[] pointarray;
+  }
+};
+
+void SetVector(Vector& ab, const Point& a, const Point& b) {
+  ab.x1 = a.x;
+  ab.y1 = a.y;
+  ab.x2 = b.x;
+  ab.y2 = b.y;
+}
+
+void SetSegment(Segment& ab, const Point& a, const Point& b) {
+  ab.x1 = a.x;
+  ab.y1 = a.y;
+  ab.x2 = b.x;
+  ab.y2 = b.y;
+}
+
+void SetPoints(Point& a, Point& b, const Segment& ab) {
+  a.x = ab.x1;
+  a.y = ab.y1;
+  b.x = ab.x2;
+  b.y = ab.y2;
+}
+
+void SetPoints(Point& a, Point& b, const Vector& ab) {
+  a.x = ab.x1;
+  a.y = ab.y1;
+  b.x = ab.x2;
+  b.y = ab.y2;
+}
+
+void SetLine(Line& line, const Point& a, const Point& b) {
+  line.a = b.y - a.y;
+  line.b = -(b.x - a.x);
+  line.c = a.y * b.x - a.x * b.y;
+}
+
+int64_t VectorProduct(const Segment& v1, const Segment& v2) {
+  return (v1.x2 - v1.x1) * (v2.y2 - v2.y1) - (v2.x2 - v2.x1) * (v1.y2 - v1.y1);
+}
+
+int64_t VectorProduct(const Vector& v1, const Segment& v2) {
+  return (v1.x2 - v1.x1) * (v2.y2 - v2.y1) - (v2.x2 - v2.x1) * (v1.y2 - v1.y1);
+}
+
+int64_t ScalarProduct(const Segment& v1, const Segment& v2) {
+  return (v1.x2 - v1.x1) * (v2.x2 - v2.x1) + (v1.y2 - v1.y1) * (v2.y2 - v2.y1);
+}
+
+bool OnLine(const Line& line, const Point& c) {
+  return (line.a * c.x + line.b * c.y + line.c == 0);
+}
+
+bool OnRay(const Line& line, const Point& c, const Point& start, const Point& stop) {
+  if (OnLine(line, c)) {
+    if (stop.x > start.x && c.x >= start.x) {
+      return true;
+    }
+    if (stop.x == start.x) {
+      if (stop.y < start.y && c.y <= start.y) {
+        return true;
+      }
+      if (stop.y > start.y && c.y >= start.y) {
+        return true;
+      }
+      if (stop.y == start.y && c.y == start.y) {
+        return true;
+      }
+      return false;
+    }
+    if (stop.x < start.x && c.x <= start.x) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool PointsOnDifferentSides(const Line& line, const Point& p1, const Point& p2) {
+  int64_t sign1 = line.a * p1.x + line.b * p1.y + line.c;
+  int64_t sign2 = line.a * p2.x + line.b * p2.y + line.c;
+  return (sign1 * sign2 < 0);
+}
+
+bool PointInSegment(const Point& point, const Point& startsegment, const Point& stopsegment) {
+  Line line1;
+  SetLine(line1, startsegment, stopsegment);
+  return (OnRay(line1, point, startsegment, stopsegment) && OnRay(line1, point, stopsegment, startsegment));
+}
+
+bool IntersectionSegment(const Vector& vector, const Segment& ab) {
+  Point a, b, firstpoint, secondpoint;
+  SetPoints(a, b, ab);
+  SetPoints(firstpoint, secondpoint, vector);
+  Vector ao;
+  SetVector(ao, a, firstpoint);
+  Line line;
+  SetLine(line, firstpoint, secondpoint);
+  if (VectorProduct(vector, ab) != 0) {
+    if (OnRay(line, a, firstpoint, secondpoint) || OnRay(line, b, firstpoint, secondpoint)) {
+      return (a.y > firstpoint.y || b.y > firstpoint.y);
+    }
+    if (PointsOnDifferentSides(line, a, b)) {
+      return ((VectorProduct(ao, ab) * VectorProduct(vector, ab) <= 0));
+    }
+  }
+  return false;
+}
+
+bool Inside(const Polygon& polygon, const Point& point) {
+  Point secondpoint;
+  Vector vector;
+  secondpoint.x = point.x - 1;
+  secondpoint.y = point.y;
+  SetVector(vector, point, secondpoint);
+  int counter = 0;
+  for (int i = 0; i < polygon.size - 1; ++i) {
+    Segment segment;
+    SetSegment(segment, polygon.pointarray[i], polygon.pointarray[i + 1]);
+    if (PointInSegment(point, polygon.pointarray[i], polygon.pointarray[i + 1])) {
+      return true;
+    }
+    if (IntersectionSegment(vector, segment)) {
+      counter++;
+    }
+  }
+  Segment segment;
+  SetSegment(segment, polygon.pointarray[polygon.size - 1], polygon.pointarray[0]);
+  if (PointInSegment(point, polygon.pointarray[polygon.size - 1], polygon.pointarray[0])) {
+    return true;
+  }
+  if (IntersectionSegment(vector, segment)) {
+    counter++;
+  }
+  return (counter % 2 == 1);
+}
+
+int main() {
+  Polygon polygon;
+  Point point;
+
+  std::cin >> polygon.size;
+
+  std::cin >> point.x >> point.y;
+
+  polygon.pointarray = new Point[polygon.size];
+  for (int i = 0; i < polygon.size; ++i) {
+    Point pointpolygon;
+    std::cin >> pointpolygon.x >> pointpolygon.y;
+    polygon.pointarray[i] = pointpolygon;
+  }
+
+  if (Inside(polygon, point)) {
+    std::cout << "YES";
+  } else {
+    std::cout << "NO";
+  }
+}

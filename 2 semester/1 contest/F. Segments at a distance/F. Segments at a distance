@@ -1,0 +1,151 @@
+#include <iostream>
+#include <cmath>
+#include <iomanip>
+
+struct Point {
+  int x;
+  int y;
+};
+
+struct Segment {
+  int x1;
+  int y1;
+  int x2;
+  int y2;
+};
+
+struct Line {
+  int a;
+  int b;
+  int c;
+};
+
+void SetSegment(Segment& ab, const Point& a, const Point& b) {
+  ab.x1 = a.x;
+  ab.y1 = a.y;
+  ab.x2 = b.x;
+  ab.y2 = b.y;
+}
+
+void SetLine(Line& line, const Point& a, const Point& b) {
+  line.a = b.y - a.y;
+  line.b = -(b.x - a.x);
+  line.c = a.y * b.x - a.x * b.y;
+}
+
+void SetPoints(Point& a, Point& b, const Segment& ab) {
+  a.x = ab.x1;
+  a.y = ab.y1;
+  b.x = ab.x2;
+  b.y = ab.y2;
+}
+
+double ScalarProduct(const Segment& v1, const Segment& v2) {
+  return (v1.x2 - v1.x1) * (v2.x2 - v2.x1) + (v1.y2 - v1.y1) * (v2.y2 - v2.y1);
+}
+
+double VectorProduct(const Segment& v1, const Segment& v2) {
+  return (v1.x2 - v1.x1) * (v2.y2 - v2.y1) - (v2.x2 - v2.x1) * (v1.y2 - v1.y1);
+}
+
+bool PointInSegment(const int& x, const int& y, const Segment& ab) {
+  Segment ac, cb;
+  Point a, b, c{x, y};
+  SetPoints(a, b, ab);
+  SetSegment(ac, a, c);
+  SetSegment(cb, c, b);
+  return ((VectorProduct(ac, cb) == 0) && (ScalarProduct(ac, cb) >= 0));
+}
+
+bool OnLine(const Line& line, const Point& c) {
+  return (line.a * c.x + line.b * c.y + line.c == 0);
+}
+
+bool OnRay(const Line& line, const Point& c, const Point& firstpoint, const Point& secondpoint) {
+  if (OnLine(line, c)) {
+    if (secondpoint.x > firstpoint.x && c.x >= firstpoint.x) {
+      return true;
+    }
+    if (secondpoint.x == firstpoint.x) {
+      if (secondpoint.y < firstpoint.y && c.y <= firstpoint.y) {
+        return true;
+      }
+      if (secondpoint.y > firstpoint.y && c.y >= firstpoint.y) {
+        return true;
+      }
+      if (secondpoint.y == firstpoint.y && c.y == firstpoint.y) {
+        return true;
+      }
+      return false;
+    }
+    if (secondpoint.x < firstpoint.x && c.x <= firstpoint.x) {
+      return true;
+    }
+  }
+  return false;
+}
+
+double DistancePoints(const Point& first, const Point& second) {
+  return std::sqrt(std::pow(second.x - first.x, 2) + std::pow(second.y - first.y, 2));
+}
+
+double DistanceToSegment(const Point& a, const Point& b, const Point& c) {
+  Line line1;
+  SetLine(line1, a, b);
+  if (OnRay(line1, c, a, b) && OnRay(line1, c, b, a)) {
+    return 0;
+  }
+  Segment ab;
+  Segment ba;
+  Segment ac;
+  Segment bc;
+  SetSegment(ab, a, b);
+  SetSegment(ba, b, a);
+  SetSegment(ac, a, c);
+  SetSegment(bc, b, c);
+  if (ScalarProduct(ab, ac) > 0 && ScalarProduct(ba, bc) > 0) {
+    return std::abs(line1.a * c.x + line1.b * c.y + line1.c) / std::hypot(line1.a, line1.b);
+  }
+  return std::min(DistancePoints(a, c), DistancePoints(b, c));
+}
+
+double Distance(const Segment& ab, const Segment& cd) {
+  Point a, b, c, d;
+  SetPoints(a, b, ab);
+  SetPoints(c, d, cd);
+  double first = std::min(DistanceToSegment(a, b, c), DistanceToSegment(a, b, d));
+  double second = std::min(DistanceToSegment(c, d, a), DistanceToSegment(c, d, b));
+  return std::min(first, second);
+}
+
+bool Intersection(const Segment& ab, const Segment& cd) {
+  Segment ac, ad, ca, cb;
+  Point a, b, c, d;
+  SetPoints(a, b, ab);
+  SetPoints(c, d, cd);
+  SetSegment(ac, a, c);
+  SetSegment(ad, a, d);
+  SetSegment(ca, c, a);
+  SetSegment(cb, c, b);
+  if (VectorProduct(ab, ac) == 0 && VectorProduct(ab, ad) == 0 && VectorProduct(cd, ca) == 0 &&
+      VectorProduct(cd, cb) == 0) {
+    return PointInSegment(cb.x1, cb.y1, ab) ||  // C принадлежит AB
+           PointInSegment(cd.x2, cd.y2, ab) ||  // D принадлежит AB
+           PointInSegment(ac.x1, ac.y1, cd) ||  // A принадлежит CD
+           PointInSegment(cb.x2, cb.y2, cd);    // B принадлежит CD
+  }
+  return (VectorProduct(ab, ac) * VectorProduct(ab, ad) <= 0 and VectorProduct(cd, ca) * VectorProduct(cd, cb) <= 0);
+}
+
+int main() {
+  std::cout << std::setprecision(7);
+  std::cout << std::fixed;
+  Segment ab, cd;
+  std::cin >> ab.x1 >> ab.y1 >> ab.x2 >> ab.y2;
+  std::cin >> cd.x1 >> cd.y1 >> cd.x2 >> cd.y2;
+  if (Intersection(ab, cd)) {
+    std::cout << 0;
+  } else {
+    std::cout << Distance(ab, cd);
+  }
+}

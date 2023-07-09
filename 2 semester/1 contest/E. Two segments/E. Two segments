@@ -1,0 +1,81 @@
+#include <iostream>
+#include <cmath>
+
+struct Floatpoint {
+  int x;
+  int y;
+};
+
+struct Segment {
+  int x1;
+  int y1;
+  int x2;
+  int y2;
+};
+
+double Vectorproduct(const Segment& v1, const Segment& v2) {
+  return (v1.x2 - v1.x1) * (v2.y2 - v2.y1) - (v2.x2 - v2.x1) * (v1.y2 - v1.y1);
+}
+
+double Scalarproduct(const Segment& v1, const Segment& v2) {
+  return (v1.x2 - v1.x1) * (v2.x2 - v2.x1) + (v1.y2 - v1.y1) * (v2.y2 - v2.y1);
+}
+
+void SetSegment(Segment& ab, const Floatpoint& a, const Floatpoint& b) {
+  ab.x1 = a.x;
+  ab.y1 = a.y;
+  ab.x2 = b.x;
+  ab.y2 = b.y;
+}
+
+void SetPoints(Floatpoint& a, Floatpoint& b, const Segment& ab) {
+  a.x = ab.x1;
+  a.y = ab.y1;
+  b.x = ab.x2;
+  b.y = ab.y2;
+}
+
+bool PointInSegment(const double& x, const double& y, const Segment& ab) {
+  Segment ac, cb;
+  Floatpoint a, b, c;
+  SetPoints(a, b, ab);
+  c.x = x;
+  c.y = y;
+  SetSegment(ac, a, c);
+  SetSegment(cb, c, b);
+  return ((Vectorproduct(ac, cb) == 0) && (Scalarproduct(ac, cb) >= 0));
+}
+
+bool Intersection(const Segment& ab, const Segment& cd) {
+  Segment ac, ad, ca, cb;
+  Floatpoint a, b, c, d;
+  SetPoints(a, b, ab);
+  SetPoints(c, d, cd);
+  SetSegment(ac, a, c);
+  SetSegment(ad, a, d);
+  SetSegment(ca, c, a);
+  SetSegment(cb, c, b);
+
+  if (Vectorproduct(ab, ac) == 0 && Vectorproduct(ab, ad) == 0 && Vectorproduct(cd, ca) == 0 &&
+      Vectorproduct(cd, cb) == 0) {
+    return PointInSegment(cb.x1, cb.y1, ab) ||  // C принадлежит AB
+           PointInSegment(cd.x2, cd.y2, ab) ||  // D принадлежит AB
+           PointInSegment(ac.x1, ac.y1, cd) ||  // A принадлежит CD
+           PointInSegment(cb.x2, cb.y2, cd);    // B принадлежит CD
+  }
+  return (Vectorproduct(ab, ac) * Vectorproduct(ab, ad) <= 0 and Vectorproduct(cd, ca) * Vectorproduct(cd, cb) <= 0);
+}
+
+int main() {
+  Segment ab;
+  Segment cd;
+
+  std::cin >> ab.x1 >> ab.y1 >> ab.x2 >> ab.y2;
+  std::cin >> cd.x1 >> cd.y1 >> cd.x2 >> cd.y2;
+
+  if (Intersection(ab, cd)) {
+    std::cout << "YES";
+  } else {
+    std::cout << "NO";
+  }
+}
